@@ -251,7 +251,7 @@ a { color: var(--lamp); }
   var LANGS = ["en", "zh", "de"];
   var TOTAL_SEC = 60 * 60;
   var MAX_HINTS = 3;
-  var KEY = "philippi-escape-v4";
+  var KEY = "philippi-escape-v5";
   var LEADER_WORD = "lamp1626"; // secret word that unlocks the leader answers; change it here
 
   // ---------- shared text ----------
@@ -422,9 +422,15 @@ a { color: var(--lamp); }
         { ico: "🤝", ans: "kept", en: "Each other", zh: "彼此的陪伴", de: "Einander" },
         { ico: "✝️", ans: "kept", en: "Their faith in God", zh: "对神的信心", de: "Ihren Glauben an Gott" },
         { ico: "🏛️", ans: "lost", en: "Their reputation in the city", zh: "他们在城里的名声", de: "Ihren Ruf in der Stadt" },
-        { ico: "😊", ans: "kept", en: "Their joy", zh: "他们的喜乐", de: "Ihre Freude" }
+        { ico: "😊", ans: "kept", en: "Their joy", zh: "他们的喜乐", de: "Ihre Freude" },
+        { ico: "⚖️", ans: "lost", en: "A fair trial", zh: "公正的审判", de: "Ein faires Verfahren" },
+        { ico: "🛏️", ans: "lost", en: "A night's rest", zh: "一夜的安睡", de: "Eine ruhige Nacht" },
+        { ico: "👀", ans: "lost", en: "Their dignity in public", zh: "在众人面前的尊严", de: "Ihre Würde vor allen Leuten" },
+        { ico: "🌅", ans: "kept", en: "Hope", zh: "盼望", de: "Die Hoffnung" },
+        { ico: "🦁", ans: "kept", en: "Their courage", zh: "他们的勇气", de: "Ihren Mut" },
+        { ico: "❤️", ans: "kept", en: "Care for others, even the jailer", zh: "关心别人，连禁卒也不例外", de: "Die Sorge um andere, sogar um den Kerkermeister" }
       ],
-      answerShow: "Lost: clothes, unhurt backs, freedom, moving feet, reputation · Kept: prayer, song, each other, faith, joy",
+      answerShow: "Lost: clothes, unhurt backs, freedom, moving feet, reputation, fair trial, night's rest, public dignity · Kept: prayer, song, each other, faith, joy, hope, courage, care for others",
       hint: { en: "Read ahead to verse 25: what were they still doing at midnight?", zh: "看第25节：半夜时他们还在做什么？", de: "Lest Vers 25: Was taten sie um Mitternacht immer noch?" },
       done: {
         en: "Everything the guards could take, they took. What mattered most, nobody could take.",
@@ -442,11 +448,11 @@ a { color: var(--lamp); }
         de: "Verletzt und gefesselt im Dunkeln tun Paulus und Silas etwas, das niemand erwartet."
       },
       task: {
-        en: "First, sing the chorus of “It Is Well with My Soul” together, each in your own language. Then tick the box and answer both questions.",
-        zh: "先一起唱《我心灵得安宁》的副歌，各人用自己的语言。然后勾选方框，回答两个问题。",
-        de: "Singt zuerst gemeinsam den Refrain von „Mir ist wohl in dem Herrn“, jeder in seiner Sprache. Dann setzt das Häkchen und beantwortet beide Fragen."
+        en: "Stop the game for a moment. Sing the whole hymn “It Is Well with My Soul” together, each in your own language. Then tick the box and answer both questions.",
+        zh: "先暂停游戏，一起唱完整首《我心灵得安宁》，各人用自己的语言。然后勾选方框，回答两个问题。",
+        de: "Unterbrecht das Spiel kurz. Singt zusammen das ganze Lied „Mir ist wohl in dem Herrn“, jeder in seiner Sprache. Dann setzt das Häkchen und beantwortet beide Fragen."
       },
-      sangLabel: { en: "We sang the chorus together", zh: "我们一起唱了副歌", de: "Wir haben den Refrain zusammen gesungen" },
+      sangLabel: { en: "We sang the whole hymn together", zh: "我们一起唱完了整首诗歌", de: "Wir haben das ganze Lied zusammen gesungen" },
       verse: {
         en: "“And at midnight Paul and Silas prayed, and <span class='blank'>{x}</span> unto God: and <span class='blank'>{y}</span> heard them.”",
         zh: "“约在半夜，保罗和西拉祷告，<span class='blank'>{x}</span>神，<span class='blank'>{y}</span>也侧耳而听。”",
@@ -673,7 +679,7 @@ a { color: var(--lamp); }
       tilePerm: { en: perm(14), zh: perm(12), de: perm(12) }, picked: [],
       tlOrder: perm(8), tlFound: 0, coolUntil: 0,
       pad: "",
-      sortOrder: perm(10), sort: {},
+      sortOrder: perm(16), sort: {},
       sang: false, c1: false, choiceWrong: null, choiceWrong2: null,
       quake: perm(6), quakeSel: null,
       dials: [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10), Math.floor(Math.random() * 10)],
