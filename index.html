@@ -180,6 +180,8 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
   border: 1px solid var(--lamp-deep); border-radius: 10px; cursor: pointer; color: var(--parch);
 }
 .shield span { font-weight: 600; }
+.shield input { width: 12em; flex: 0 1 auto; }
+.leader .shield-wrap { min-height: 210px; }
 .shield small { color: var(--muted); }
 
 @keyframes glow { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--lamp) 50%, transparent); } to { box-shadow: 0 0 0 18px transparent; } }
@@ -205,6 +207,7 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
   var TOTAL_SEC = 50 * 60;
   var MAX_HINTS = 3;
   var KEY = "philippi-escape-v1";
+  var LEADER_WORD = "lamp1626"; // secret word that unlocks the leader answers; change it here
 
   // ---------- content ----------
   var UI = {
@@ -693,9 +696,12 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
     var canSkip = S.step >= 1 && S.step <= PUZZLES.length && !S.solved[PUZZLES[S.step - 1].id];
     return "<aside class='leader' aria-label='Leader panel'><strong>" + Li(UI.leader) + "</strong>" +
       "<div class='shield-wrap'><div class='tbl" + (S.reveal ? "" : " hidden-answers") + "' aria-hidden='" + (!S.reveal) + "'><table><thead><tr><th>#</th><th>Clue</th><th>Answer</th><th></th></tr></thead><tbody>" + rows + "</tbody></table></div>" +
-      (S.reveal ? "" : "<button class='shield' type='button' data-act='reveal'><span>🔒 Answers hidden</span><small>Leader only · click to show</small></button>") + "</div>" +
+      (S.reveal ? "" : "<form class='shield' data-act='unlock' autocomplete='off'><span>🔒 Answers hidden</span>" +
+        "<label for='leader-word'><small>Leader only · enter the secret word</small></label>" +
+        "<div class='row' style='justify-content:center'><input type='password' id='leader-word' autocomplete='off'><button class='btn' type='submit'>Show</button></div>" +
+        "<small id='leader-fb' class='fb bad' aria-live='polite'></small></form>") + "</div>" +
       (S.reveal ? "<div><button class='btn secondary' type='button' data-act='hide'>Hide answers</button></div>" : "") +
-      "<div class='row'>" +
+      (!S.reveal ? "" : "<div class='row'>") + (S.reveal ? "" : "<div class='row' hidden>") +
       (canSkip ? "<button class='btn secondary' type='button' data-act='skip'>Solve this clue for them</button>" : "") +
       (S.confirmReset ? "<button class='btn' type='button' data-act='resetYes'>Yes, reset everything</button><button class='btn secondary' type='button' data-act='resetNo'>Cancel</button>"
                       : "<button class='btn secondary' type='button' data-act='reset'>Reset game</button>") +
@@ -784,7 +790,6 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         break;
       }
       case "skip": if (p) solve(p); break;
-      case "reveal": S.reveal = true; render(); break;
       case "hide": S.reveal = false; render(); break;
       case "reset": S.confirmReset = true; render(); break;
       case "resetNo": S.confirmReset = false; render(); break;
@@ -798,6 +803,13 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
   });
 
   document.addEventListener("submit", function (e) {
+    var lf = e.target.closest("form[data-act='unlock']");
+    if (lf) {
+      e.preventDefault();
+      if (norm(lf.querySelector("input").value) === norm(LEADER_WORD)) { S.reveal = true; render(); }
+      else { $("leader-fb").textContent = "Wrong word"; lf.querySelector("input").select(); }
+      return;
+    }
     var f = e.target.closest("form[data-act='answer']"); if (!f) return;
     e.preventDefault();
     var p = current(); if (!p) return;
