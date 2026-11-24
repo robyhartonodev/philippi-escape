@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Midnight in Philippi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700&display=swap">
+<style>
+/* Layout: one lamp-lit card per clue on a night-stone ground; a slim top bar carries progress, the dawn countdown and language. Single dark look on purpose: it is midnight. */
+:root {
+  --night: #0e1320;
+  --stone: #171e2e;
+  --stone-2: #212a3e;
+  --line: #2f3a52;
+  --parch: #ebe5d6;
+  --muted: #a3abbd;
+  --lamp: #e9a94f;
+  --lamp-deep: #b9772a;
+  --ok: #86c99f;
+  --bad: #e58b78;
+  --display: "Marcellus", "Noto Serif SC", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", "Noto Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 50% -10%, #1c2438 0%, var(--night) 60%) fixed, var(--night);
+  color: var(--parch);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.55;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--night); }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--lamp); outline-offset: 2px; }
+
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--night) 92%, transparent);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--line);
+}
+.bar-inner, .wrap {
+  max-width: 860px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.bar-inner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-block: 10px; }
+.brand { font-family: var(--display); font-size: 1.05rem; letter-spacing: .04em; margin-right: auto; white-space: nowrap; }
+.dots { display: flex; gap: 6px; align-items: center; }
+.dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--muted); }
+.dot.done { background: var(--lamp); border-color: var(--lamp); }
+.dot.now { border-color: var(--lamp); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lamp) 25%, transparent); }
+.timer { font-variant-numeric: tabular-nums; font-weight: 600; min-width: 4.5ch; text-align: right; }
+.timer.low { color: var(--bad); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { background: transparent; border: 0; padding: 5px 10px; cursor: pointer; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--stone-2); color: var(--parch); }
+.ghost { background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; cursor: pointer; color: var(--muted); }
+.ghost:hover { color: var(--parch); }
+
+.wrap { padding-block: 28px 64px; display: grid; gap: 20px; }
+.card {
+  background: linear-gradient(180deg, var(--stone) 0%, color-mix(in srgb, var(--stone) 80%, var(--night)) 100%);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: clamp(20px, 4vw, 36px);
+  display: grid; gap: 16px;
+  min-width: 0;
+}
+.ref { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; color: var(--lamp); margin: 0; }
+h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; text-wrap: balance; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 6vw, 3.2rem); }
+h2 { font-size: clamp(1.5rem, 4vw, 2.1rem); }
+p { margin: 0; }
+.story { color: var(--parch); max-width: 65ch; }
+.task { border-left: 3px solid var(--lamp); padding: 10px 14px; background: color-mix(in srgb, var(--lamp) 8%, transparent); border-radius: 0 8px 8px 0; }
+.verse { margin: 0; padding: 14px 18px; background: var(--night); border: 1px solid var(--line); border-radius: 10px; font-size: 1.08rem; display: grid; gap: 8px; }
+.verse .src { font-size: .78rem; color: var(--muted); }
+.blank { display: inline-block; min-width: 4.5em; border-bottom: 2px solid var(--lamp); color: var(--lamp); text-align: center; }
+
+/* multilingual blocks */
+.ml { display: grid; gap: 6px; }
+.ml > span { display: block; }
+.ml > span + span { color: var(--muted); }
+.ml > span[lang^="zh"] { font-family: "Noto Sans SC", var(--body); }
+h1 .ml > span + span, h2 .ml > span + span { font-size: .62em; }
+.verse .ml > span + span { color: var(--parch); opacity: .82; }
+
+form.answer { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+form.answer label { width: 100%; color: var(--muted); font-size: .95rem; }
+input[type="text"], select {
+  background: var(--night); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; min-width: 0;
+}
+input[type="text"] { flex: 1 1 220px; font-size: 1.1rem; }
+.btn {
+  background: var(--lamp); color: #1a1206; border: 0; border-radius: 8px; padding: 10px 18px; font-weight: 600; cursor: pointer;
+}
+.btn:hover { background: color-mix(in srgb, var(--lamp) 85%, white); }
+.btn.secondary { background: var(--stone-2); color: var(--parch); border: 1px solid var(--line); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.fb { min-height: 1.4em; font-weight: 500; }
+.fb.bad { color: var(--bad); }
+.fb.ok { color: var(--ok); }
+.solved { border: 1px solid color-mix(in srgb, var(--ok) 50%, var(--line)); background: color-mix(in srgb, var(--ok) 8%, transparent); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; }
+.hint { color: var(--muted); font-size: .95rem; }
+.hint strong { color: var(--lamp); font-weight: 600; }
+
+/* ordering */
+ol.order { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: o; }
+ol.order li {
+  counter-increment: o;
+  display: grid; grid-template-columns: 2em 1fr auto; gap: 10px; align-items: center;
+  background: var(--stone-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px;
+}
+ol.order li::before { content: counter(o); font-family: var(--display); color: var(--lamp); font-size: 1.2rem; text-align: center; }
+ol.order .txt { min-width: 0; }
+.mv { display: flex; gap: 4px; }
+.mv button { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--night); cursor: pointer; }
+.mv button:disabled { opacity: .3; cursor: default; }
+ol.order.locked li { border-color: color-mix(in srgb, var(--ok) 50%, var(--line)); }
+
+/* maze */
+.maze-wrap { overflow-x: auto; }
+.maze { display: grid; grid-template-columns: repeat(7, minmax(36px, 52px)); gap: 4px; width: max-content; margin: 0 auto; }
+.maze button {
+  aspect-ratio: 1; border-radius: 6px; border: 1px solid var(--line); background: var(--stone-2); cursor: pointer; padding: 0;
+  font-size: .62rem; line-height: 1.1; color: var(--muted);
+}
+.maze button.wall { background: #3a3427; border-color: #4a4232; cursor: default;
+  background-image: repeating-linear-gradient(0deg, transparent 0 9px, rgba(0,0,0,.25) 9px 10px); }
+.maze button.trail { background: color-mix(in srgb, var(--lamp) 22%, var(--stone-2)); }
+.maze button.pos { background: var(--lamp); color: #1a1206; font-weight: 700; font-size: 1.1rem; }
+.maze button.goal { border: 2px dashed var(--lamp); color: var(--lamp); }
+.maze button.near { border-color: var(--lamp); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; color: var(--muted); font-size: .9rem; }
+
+/* cells */
+ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.cells { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.cell { background: var(--night); border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; min-width: 0; }
+.cell.inner { border-color: color-mix(in srgb, var(--lamp) 45%, var(--line)); }
+.cell label { font-size: .85rem; color: var(--muted); }
+.cell select { width: 100%; }
+@media (max-width: 640px) { .cells { grid-template-columns: 1fr; } }
+
+/* cipher */
+.cipher { display: grid; gap: 14px; }
+.cipher-row { background: var(--night); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 10px; min-width: 0; }
+.glyphs { font-size: clamp(1.6rem, 5vw, 2.2rem); letter-spacing: .25em; color: var(--lamp); word-break: break-all; }
+.glyphs small { font-size: 1rem; letter-spacing: 0; color: var(--parch); }
+.key { display: flex; flex-wrap: wrap; gap: 6px; }
+.key span { border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; font-variant-numeric: tabular-nums; }
+.key span.missing { border-color: var(--bad); color: var(--bad); }
+
+/* intro + end */
+.hero { text-align: left; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.rule { background: var(--night); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.rule b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.6rem; color: var(--lamp); }
+.stats { display: flex; flex-wrap: wrap; gap: 24px; }
+.stats b { display: block; font-size: 1.5rem; font-variant-numeric: tabular-nums; color: var(--lamp); }
+.dawn { border: 1px solid var(--lamp); background: color-mix(in srgb, var(--lamp) 12%, var(--stone)); border-radius: 12px; padding: 16px; display: grid; gap: 10px; }
+
+/* leader panel */
+.leader { border: 1px dashed var(--lamp-deep); border-radius: 12px; padding: 16px; background: var(--stone); display: grid; gap: 10px; }
+.leader table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+.leader td, .leader th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+.leader .tbl { overflow-x: auto; }
+.shield-wrap { position: relative; }
+.hidden-answers { filter: blur(9px); user-select: none; pointer-events: none; }
+.shield {
+  position: absolute; inset: 0; display: grid; place-content: center; gap: 4px; text-align: center;
+  background: repeating-linear-gradient(45deg, var(--stone-2) 0 12px, var(--stone) 12px 24px);
+  border: 1px solid var(--lamp-deep); border-radius: 10px; cursor: pointer; color: var(--parch);
+}
+.shield span { font-weight: 600; }
+.shield small { color: var(--muted); }
+
+@keyframes glow { from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--lamp) 50%, transparent); } to { box-shadow: 0 0 0 18px transparent; } }
+.solved { animation: glow 1.2s ease-out 1; }
+@media (prefers-reduced-motion: reduce) { .solved { animation: none; } }
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="brand" id="brand">Midnight in Philippi</div>
+    <div class="dots" id="dots" aria-label="Progress"></div>
+    <div class="timer" id="timer" aria-live="off">50:00</div>
+    <div class="seg" role="group" aria-label="Language" id="langs"></div>
+    <button class="ghost" id="leaderBtn" type="button" aria-expanded="false">Leader</button>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+
+<script>
+(function () {
+  "use strict";
+  var LANGS = ["en", "zh", "de"];
+  var TOTAL_SEC = 50 * 60;
+  var MAX_HINTS = 3;
+  var KEY = "philippi-escape-v1";
+
+  // ---------- content ----------
+  var UI = {
+    title: { en: "Midnight in Philippi", zh: "腓立比的午夜", de: "Mitternacht in Philippi" },
+    start: { en: "Start the escape", zh: "开始", de: "Los geht's" },
+    check: { en: "Check", zh: "核对", de: "Prüfen" },
+    next: { en: "Next clue", zh: "下一条线索", de: "Nächster Hinweis" },
+    finish: { en: "Open the doors", zh: "打开监门", de: "Türen öffnen" },
+    wrong: { en: "Not yet. Try again.", zh: "还不对，再试一次。", de: "Noch nicht. Versucht es nochmal." },
+    useHint: { en: "Use a hint", zh: "使用提示", de: "Tipp nutzen" },
+    hintsLeft: { en: "hints left", zh: "个提示剩余", de: "Tipps übrig" },
+    noHints: { en: "No hints left", zh: "没有提示了", de: "Keine Tipps mehr" },
+    hint: { en: "Hint", zh: "提示", de: "Tipp" },
+    leader: { en: "Leader", zh: "带领者", de: "Leiter" },
+    clue: { en: "Clue", zh: "线索", de: "Hinweis" },
+    of: { en: "of", zh: "/", de: "von" },
+    inPlace: { en: "in the right place", zh: "个位置正确", de: "an der richtigen Stelle" },
+    up: { en: "Move up", zh: "上移", de: "Nach oben" },
+    down: { en: "Move down", zh: "下移", de: "Nach unten" },
+    resetPath: { en: "Back to the gate", zh: "回到监门", de: "Zurück zum Tor" },
+    gate: { en: "Gate", zh: "监门", de: "Tor" },
+    inner: { en: "Inner", zh: "内监", de: "Innen" },
+    you: { en: "You", zh: "你", de: "Ihr" },
+    choose: { en: "Choose…", zh: "请选择…", de: "Wählen…" },
+    key: { en: "Key", zh: "密码表", de: "Schlüssel" },
+    time: { en: "Time", zh: "用时", de: "Zeit" },
+    hintsUsed: { en: "Hints used", zh: "使用提示", de: "Tipps genutzt" },
+    dawn: {
+      en: "Dawn has come. Leader: read Acts 16:26 aloud, then open the doors.",
+      zh: "天亮了。带领者：请朗读使徒行传16:26，然后打开监门。",
+      de: "Der Morgen ist da. Leiter: Lest Apostelgeschichte 16,26 vor und öffnet dann die Türen."
+    },
+    keepGoing: { en: "Keep solving", zh: "继续解谜", de: "Weiter rätseln" }
+  };
+
+  var INTRO = {
+    ref: { en: "Acts 16:16–34", zh: "使徒行传 16:16–34", de: "Apostelgeschichte 16,16–34" },
+    story: {
+      en: "Philippi, a Roman colony, around AD 50. Paul and Silas have been beaten and thrown into the inner prison, their feet locked in the stocks. You are locked in with them. It is almost midnight. Work through seven clues from Acts 16 before dawn.",
+      zh: "公元50年左右，罗马殖民城腓立比。保罗和西拉被棍打后下在内监，两脚上了木狗。你们和他们一同被关在这里。将近半夜了。在天亮之前，解开使徒行传16章的七条线索。",
+      de: "Philippi, eine römische Kolonie, um 50 n. Chr. Paulus und Silas wurden geschlagen und ins innerste Gefängnis geworfen, die Füße im Block. Ihr seid mit ihnen eingesperrt. Es ist fast Mitternacht. Löst sieben Hinweise aus Apostelgeschichte 16, bevor der Morgen kommt."
+    },
+    r1: { en: "clues, one after another", zh: "条线索，逐一解开", de: "Hinweise, einer nach dem anderen" },
+    r2: { en: "minutes until dawn", zh: "分钟后天亮", de: "Minuten bis zum Morgen" },
+    r3: { en: "hints for the whole group", zh: "个提示，全组共用", de: "Tipps für die ganze Gruppe" },
+    r4: { en: "Answer in English, 中文 or Deutsch", zh: "可用英文、中文或德文作答", de: "Antwortet auf Englisch, 中文 oder Deutsch" }
+  };
+
+  var PUZZLES = [
+    {
+      id: "girl", type: "text",
+      ref: { en: "Acts 16:16–18", zh: "使徒行传 16:16–18", de: "Apg 16,16–18" },
+      title: { en: "The fortune-teller", zh: "被巫鬼附着的使女", de: "Die Wahrsagerin" },
+      story: {
+        en: "A slave girl who tells fortunes follows Paul for many days, shouting after him. Finally Paul turns and speaks to the spirit.",
+        zh: "有一个被巫鬼附着的使女，一连多日跟着保罗喊叫。保罗终于转身对那鬼说话。",
+        de: "Eine Magd mit einem Wahrsagegeist läuft Paulus viele Tage nach und schreit. Schließlich dreht er sich um und spricht zu dem Geist."
+      },
+      verse: {
+        en: "“I command thee in the name of <span class='blank'>?</span> Christ to come out of her.”",
+        zh: "“我奉<span class='blank'>?</span>基督的名，吩咐你从她身上出来！”",
+        de: "„Ich gebiete dir in dem Namen <span class='blank'>?</span> Christi, daß du von ihr ausfahrest.“"
+      },
+      src: { en: "v.18 · KJV", zh: "第18节 · 和合本", de: "V. 18 · Luther 1912" },
+      label: { en: "In whose name?", zh: "奉谁的名？", de: "In wessen Namen?" },
+      answers: ["jesus", "jesu", "耶稣", "耶穌", "jesuschristus", "jesuschrist", "jesuchristi", "耶稣基督"],
+      answerShow: "Jesus / 耶稣 / Jesu",
+      hint: { en: "The name means “God saves”.", zh: "这名字的意思是“神拯救”。", de: "Der Name bedeutet „Gott rettet“." },
+      done: {
+        en: "The spirit left her that same hour. But her owners have just lost their income.",
+        zh: "那鬼当时就出来了。可是她的主人们从此失去了财路。",
+        de: "Der Geist fuhr zur selben Stunde aus. Aber ihre Herren haben damit ihr Einkommen verloren."
+      }
+    },
+    {
+      id: "accuse", type: "order",
+      ref: { en: "Acts 16:19–22", zh: "使徒行传 16:19–22", de: "Apg 16,19–22" },
+      title: { en: "The accusation", zh: "被告上公堂", de: "Die Anklage" },
+      story: {
+        en: "The owners are furious. Put what happened next in the right order.",
+        zh: "她的主人们大怒。请把接下来发生的事按顺序排好。",
+        de: "Die Herren sind wütend. Bringt in die richtige Reihenfolge, was dann geschah."
+      },
+      items: [
+        { en: "The owners see that their hope of profit is gone.", zh: "使女的主人们见得利的指望没有了。", de: "Die Herren sehen, dass ihre Hoffnung auf Gewinn dahin ist." },
+        { en: "They seize Paul and Silas and drag them to the marketplace.", zh: "他们揪住保罗和西拉，拉到市上去见首领。", de: "Sie packen Paulus und Silas und schleppen sie auf den Markt." },
+        { en: "They accuse them: “These Jews are throwing our city into an uproar.”", zh: "他们控告说：“这些人是犹太人，竟骚扰我们的城。”", de: "Sie klagen an: „Diese Juden bringen unsere Stadt in Aufruhr.“" },
+        { en: "The crowd joins in the attack.", zh: "众人就一同起来攻击他们。", de: "Das Volk stellt sich gegen sie." },
+        { en: "The magistrates have them stripped and beaten with rods.", zh: "官长吩咐剥了他们的衣裳，用棍打。", de: "Die Stadtrichter lassen ihnen die Kleider herunterreißen und sie mit Ruten schlagen." }
+      ],
+      answerShow: "Profit gone → dragged to market → accused → crowd → beaten",
+      hint: { en: "Money comes first, the beating comes last.", zh: "先是钱的事，最后才是棍打。", de: "Zuerst geht es ums Geld, zuletzt kommen die Schläge." },
+      done: {
+        en: "Accused as foreigners who disturb the city, and beaten without a trial.",
+        zh: "他们被控是扰乱城市的外族人，没有定罪就被棍打。",
+        de: "Als Fremde angeklagt, die die Stadt aufwiegeln, und ohne Urteil geschlagen."
+      }
+    },
+    {
+      id: "stocks", type: "maze",
+      ref: { en: "Acts 16:23–24", zh: "使徒行传 16:23–24", de: "Apg 16,23–24" },
+      title: { en: "Into the inner prison", zh: "下在内监", de: "Ins innerste Gefängnis" },
+      story: {
+        en: "The jailer was ordered to guard them carefully. Lead the prisoners from the gate to the inner prison. Tap a square next to you to move, or use the arrow keys.",
+        zh: "禁卒受命严紧看守他们。带囚犯从监门走到内监。点击旁边的格子移动，或使用方向键。",
+        de: "Der Kerkermeister soll sie sicher bewachen. Führt die Gefangenen vom Tor ins innerste Gefängnis. Tippt auf ein Nachbarfeld oder nutzt die Pfeiltasten."
+      },
+      answerShow: "Left side down, middle back up, right edge down",
+      hint: {
+        en: "Take the long way: down the left side, back up through the middle, then down the right edge.",
+        zh: "要绕远路：先沿左边往下，再从中间往上，最后沿右边往下。",
+        de: "Nehmt den langen Weg: links hinunter, durch die Mitte wieder hinauf, dann am rechten Rand hinunter."
+      },
+      done: {
+        en: "Feet fastened in the stocks, deep inside, in the dark.",
+        zh: "两脚上了木狗，在最里面的黑暗之中。",
+        de: "Die Füße im Block, ganz innen, im Dunkeln."
+      }
+    },
+    {
+      id: "midnight", type: "text",
+      ref: { en: "Acts 16:25", zh: "使徒行传 16:25", de: "Apg 16,25" },
+      title: { en: "Songs at midnight", zh: "半夜的歌声", de: "Lieder um Mitternacht" },
+      story: {
+        en: "Bruised and chained in the dark, Paul and Silas do something nobody expects.",
+        zh: "在黑暗中，身上带伤、脚上锁着，保罗和西拉做了一件没人想到的事。",
+        de: "Verletzt und gefesselt im Dunkeln tun Paulus und Silas etwas, das niemand erwartet."
+      },
+      task: {
+        en: "First, sing the chorus of “It Is Well with My Soul” together, each in your own language. Then fill in the blank.",
+        zh: "先一起唱《我心灵得安宁》的副歌，各人用自己的语言。然后填空。",
+        de: "Singt zuerst gemeinsam den Refrain von „Mir ist wohl in dem Herrn“, jeder in seiner Sprache. Dann füllt die Lücke."
+      },
+      verse: {
+        en: "“And at midnight Paul and Silas prayed, and <span class='blank'>?</span> praises unto God: and the prisoners heard them.”",
+        zh: "“约在半夜，保罗和西拉祷告，<span class='blank'>?</span>赞美神，众囚犯也侧耳而听。”",
+        de: "„Um die Mitternacht aber beteten Paulus und Silas und <span class='blank'>?</span> Gott. Und es hörten sie die Gefangenen.“"
+      },
+      src: { en: "v.25 · KJV", zh: "第25节 · 和合本", de: "V. 25 · Luther 1912" },
+      label: { en: "What did they do?", zh: "他们做了什么？", de: "Was taten sie?" },
+      answers: ["sang", "sing", "singing", "sung", "唱诗", "唱", "唱歌", "唱诗歌", "lobten", "loben", "sangen", "singen", "lobsangen"],
+      answerShow: "sang / 唱诗 / lobten (singen)",
+      hint: { en: "What did you just do together?", zh: "你们刚才一起做了什么？", de: "Was habt ihr gerade zusammen gemacht?" },
+      done: {
+        en: "And the other prisoners were listening.",
+        zh: "众囚犯都侧耳而听。",
+        de: "Und die anderen Gefangenen hörten zu."
+      }
+    },
+    {
+      id: "quake", type: "order",
+      ref: { en: "Acts 16:26–27", zh: "使徒行传 16:26–27", de: "Apg 16,26–27" },
+      title: { en: "The earthquake", zh: "地大震动", de: "Das Erdbeben" },
+      story: {
+        en: "The earthquake has shaken the story apart. Put the pieces back in order.",
+        zh: "地震把经文震散了。把它们排回正确的顺序。",
+        de: "Das Beben hat die Geschichte durcheinandergeschüttelt. Bringt die Teile wieder in die richtige Reihenfolge."
+      },
+      items: [
+        { en: "Suddenly there was a great earthquake,", zh: "忽然，地大震动，", de: "Plötzlich kam ein großes Erdbeben," },
+        { en: "so that the foundations of the prison were shaken.", zh: "甚至监牢的地基都摇动了。", de: "sodass die Grundmauern des Gefängnisses wankten." },
+        { en: "Immediately all the doors were opened,", zh: "监门立刻全开，", de: "Sofort öffneten sich alle Türen," },
+        { en: "and everyone's chains came loose.", zh: "众囚犯的锁链也都松开了。", de: "und allen fielen die Fesseln ab." },
+        { en: "The jailer woke up and saw the prison doors open.", zh: "禁卒一醒，看见监门全开。", de: "Der Kerkermeister erwachte und sah die Türen offen." }
+      ],
+      answerShow: "Earthquake → foundations → doors → chains → jailer wakes",
+      hint: { en: "First the ground moves, then the doors, then the chains.", zh: "先是地动，然后是门，再是锁链。", de: "Erst bebt der Boden, dann die Türen, dann die Fesseln." },
+      done: {
+        en: "Every door open. Every chain loose. Free.",
+        zh: "监门全开，锁链全松。自由了。",
+        de: "Alle Türen offen. Alle Fesseln los. Frei."
+      }
+    },
+    {
+      id: "cells", type: "logic",
+      ref: { en: "Acts 16:27–28", zh: "使徒行传 16:27–28", de: "Apg 16,27–28" },
+      title: { en: "The jailer's sword", zh: "禁卒的刀", de: "Das Schwert des Kerkermeisters" },
+      story: {
+        en: "The jailer sees the open doors and draws his sword. He thinks everyone has escaped. Check the cells: who is where?",
+        zh: "禁卒看见监门全开，就拔刀要自杀，以为囚犯已经逃走了。查看监房：谁在哪里？",
+        de: "Der Kerkermeister sieht die offenen Türen und zieht sein Schwert. Er glaubt, alle seien geflohen. Prüft die Zellen: Wer ist wo?"
+      },
+      people: [
+        { id: "paul", en: "Paul", zh: "保罗", de: "Paulus" },
+        { id: "silas", en: "Silas", zh: "西拉", de: "Silas" },
+        { id: "thief", en: "The thief", zh: "小偷", de: "Der Dieb" },
+        { id: "soldier", en: "The soldier", zh: "士兵", de: "Der Soldat" },
+        { id: "old", en: "The old man", zh: "老人", de: "Der alte Mann" }
+      ],
+      solution: ["thief", "soldier", "old", "paul", "silas"],
+      clues: [
+        { en: "Paul and Silas sit next to each other in the inner prison (cells 4 and 5).", zh: "保罗和西拉在内监里挨着坐（第4和第5间）。", de: "Paulus und Silas sitzen nebeneinander im innersten Gefängnis (Zellen 4 und 5)." },
+        { en: "Silas is in the last cell.", zh: "西拉在最后一间。", de: "Silas ist in der letzten Zelle." },
+        { en: "The thief sits by the door.", zh: "小偷坐在门边。", de: "Der Dieb sitzt an der Tür." },
+        { en: "The old man is not next to the thief.", zh: "老人不挨着小偷。", de: "Der alte Mann sitzt nicht neben dem Dieb." }
+      ],
+      cellNames: [
+        { en: "Cell 1 · by the door", zh: "第1间 · 门边", de: "Zelle 1 · an der Tür" },
+        { en: "Cell 2", zh: "第2间", de: "Zelle 2" },
+        { en: "Cell 3", zh: "第3间", de: "Zelle 3" },
+        { en: "Cell 4 · inner", zh: "第4间 · 内监", de: "Zelle 4 · innen" },
+        { en: "Cell 5 · inner", zh: "第5间 · 内监", de: "Zelle 5 · innen" }
+      ],
+      answerShow: "1 thief · 2 soldier · 3 old man · 4 Paul · 5 Silas",
+      hint: {
+        en: "Place Silas first, then Paul, then the thief. The old man needs one cell of distance from the thief.",
+        zh: "先放西拉，再放保罗，然后是小偷。老人和小偷之间要隔一间。",
+        de: "Setzt zuerst Silas, dann Paulus, dann den Dieb. Zwischen dem alten Mann und dem Dieb muss eine Zelle frei sein."
+      },
+      done: {
+        en: "Nobody escaped. Paul shouts: “Do thyself no harm: for we are all here.”",
+        zh: "没有一个人逃走。保罗大声呼叫：“不要伤害自己！我们都在这里。”",
+        de: "Niemand ist geflohen. Paulus ruft laut: „Tu dir nichts Übles; denn wir sind alle hier!“"
+      }
+    },
+    {
+      id: "question", type: "cipher",
+      ref: { en: "Acts 16:29–31", zh: "使徒行传 16:29–31", de: "Apg 16,29–31" },
+      title: { en: "The jailer's question", zh: "禁卒的问题", de: "Die Frage des Kerkermeisters" },
+      story: {
+        en: "Trembling, the jailer falls down before Paul and Silas: “Sirs, what must I do to be saved?” Decode Paul's answer. One symbol is missing from the key.",
+        zh: "禁卒战战兢兢地俯伏在保罗、西拉面前，说：“二位先生，我当怎样行才可以得救？”解开保罗的回答。密码表里少了一个符号。",
+        de: "Zitternd fällt der Kerkermeister vor Paulus und Silas nieder: „Liebe Herren, was soll ich tun, daß ich selig werde?“ Entschlüsselt die Antwort des Paulus. Ein Zeichen fehlt im Schlüssel."
+      },
+      cipher: {
+        en: { glyphs: "▲●☽✦●◆●", tail: " on the Lord Jesus Christ", key: [["■", "A"], ["▲", "B"], ["✚", "C"], ["●", "E"], ["⌘", "G"], ["☽", "L"], ["◆", "V"], ["✦", "?"]] },
+        zh: { glyphs: "☉✦✚◇❖", tail: "，你和你一家都必得救", key: [["▣", "爱"], ["☉", "当"], ["◎", "望"], ["✚", "主"], ["◇", "耶"], ["❖", "稣"], ["✦", "?"]] },
+        de: { glyphs: "⌘☽■✿▲●", tail: " an den HERRN Jesus Christus", key: [["■", "A"], ["▲", "B"], ["●", "E"], ["⌘", "G"], ["✦", "I"], ["☽", "L"], ["◆", "V"], ["✿", "?"]] }
+      },
+      label: { en: "What must he do?", zh: "他当怎样行？", de: "Was soll er tun?" },
+      answers: ["believe", "glaube", "glauben", "信", "相信", "当信", "believeonthelordjesuschrist"],
+      answerShow: "believe / 信 / glaube",
+      hint: { en: "The missing symbol is a vowel.", zh: "缺的那个字和“信心”有关。", de: "Das fehlende Zeichen ist ein Vokal." },
+      done: {
+        en: "“Believe on the Lord Jesus Christ, and thou shalt be saved, and thy house.”",
+        zh: "“当信主耶稣，你和你一家都必得救。”",
+        de: "„Glaube an den HERRN Jesus Christus, so wirst du und dein Haus selig!“"
+      }
+    }
+  ];
+
+  var END = {
+    ref: { en: "Acts 16:31–34", zh: "使徒行传 16:31–34", de: "Apg 16,31–34" },
+    title: { en: "The doors are open", zh: "监门开了", de: "Die Türen sind offen" },
+    v31: {
+      en: "“Believe on the Lord Jesus Christ, and thou shalt be saved, and thy house.”",
+      zh: "“当信主耶稣，你和你一家都必得救。”",
+      de: "„Glaube an den HERRN Jesus Christus, so wirst du und dein Haus selig!“"
+    },
+    v34: {
+      en: "The jailer brought them into his house, set food before them, and rejoiced, believing in God with all his house.",
+      zh: "禁卒领他们上自己家里去，给他们摆上饭；他和全家，因为信了神，都很喜乐。",
+      de: "Der Kerkermeister führte sie in sein Haus, setzte ihnen einen Tisch vor und freute sich mit seinem ganzen Hause, daß er an Gott gläubig geworden war."
+    },
+    close: {
+      en: "The night that began in chains ends at the jailer's table.",
+      zh: "在锁链中开始的夜晚，在禁卒的饭桌旁结束。",
+      de: "Die Nacht, die in Ketten begann, endet am Tisch des Kerkermeisters."
+    }
+  };
+
+  // Maze: # wall, S start (gate), G goal (inner prison)
+  var MAZE = [
+    "S..#...",
+    "##.#.#.",
+    "...#.#.",
+    ".###.#.",
+    "...#.#.",
+    "##...#.",
+    "....#.G"
+  ];
+  var GOAL = [6, 6];
+
+  // ---------- state ----------
+  function perm(n) {
+    var a, i, j, t, same;
+    do {
+      a = []; for (i = 0; i < n; i++) a.push(i);
+      for (i = n - 1; i > 0; i--) { j = Math.floor(Math.random() * (i + 1)); t = a[i]; a[i] = a[j]; a[j] = t; }
+      same = a.every(function (v, k) { return v === k; });
+    } while (same);
+    return a;
+  }
+  function fresh(lang) {
+    return {
+      lang: lang || "all", step: 0, started: null, finished: null, hints: 0,
+      shown: {}, solved: {}, dawnSeen: false,
+      orders: { accuse: perm(5), quake: perm(5) },
+      maze: { pos: [0, 0], trail: ["0,0"] },
+      cells: ["", "", "", "", ""],
+      leader: false
+    };
+  }
+  function load() {
+    try { var raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  var S = load() || fresh();
+  S.reveal = false; // answers always start hidden after a reload
+
+  // ---------- helpers ----------
+  function L(o) {
+    if (typeof o === "string") return o;
+    if (S.lang === "all") {
+      return "<span class='ml'>" + LANGS.map(function (l) {
+        return "<span lang='" + (l === "zh" ? "zh-Hans" : l) + "'>" + o[l] + "</span>";
+      }).join("") + "</span>";
+    }
+    return o[S.lang];
+  }
+  function Li(o) { // inline, for buttons and labels
+    if (S.lang === "all") return o.en + " · " + o.zh + " · " + o.de;
+    return o[S.lang];
+  }
+  function Lt(o) { return S.lang === "all" ? o.en : o[S.lang]; } // short text (aria)
+  function norm(v) {
+    return String(v || "").toLowerCase().normalize("NFKC").replace(/[\s\p{P}\p{S}]/gu, "").replace(/ß/g, "ss");
+  }
+  function fmt(sec) {
+    sec = Math.max(0, Math.round(sec));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+  }
+  function elapsed() {
+    if (!S.started) return 0;
+    var end = S.finished || Date.now();
+    return (end - S.started) / 1000;
+  }
+  var $ = function (id) { return document.getElementById(id); };
+  var app = $("app");
+
+  // ---------- header ----------
+  function renderBar() {
+    $("brand").textContent = S.lang === "all" ? UI.title.en : UI.title[S.lang];
+    var dots = "";
+    for (var i = 1; i <= PUZZLES.length; i++) {
+      var cls = S.solved[PUZZLES[i - 1].id] ? "done" : (S.step === i ? "now" : "");
+      dots += "<span class='dot " + cls + "' title='" + i + "'></span>";
+    }
+    $("dots").innerHTML = dots;
+    $("dots").setAttribute("aria-label", "Progress: " + Object.keys(S.solved).length + " / " + PUZZLES.length);
+    var opts = [["en", "EN"], ["zh", "中文"], ["de", "DE"], ["all", "EN·中·DE"]];
+    $("langs").innerHTML = opts.map(function (o) {
+      return "<button type='button' data-lang='" + o[0] + "' aria-pressed='" + (S.lang === o[0]) + "'>" + o[1] + "</button>";
+    }).join("");
+    $("leaderBtn").textContent = Li(UI.leader);
+    $("leaderBtn").setAttribute("aria-expanded", String(!!S.leader));
+    tick();
+  }
+  function tick() {
+    var left = TOTAL_SEC - elapsed();
+    var t = $("timer");
+    t.textContent = S.started ? fmt(left) : fmt(TOTAL_SEC);
+    t.classList.toggle("low", S.started && !S.finished && left < 5 * 60);
+    if (S.started && !S.finished && left <= 0 && !S.dawnSeen) { S.dawnSeen = true; save(); render(); }
+  }
+  setInterval(tick, 1000);
+
+  // ---------- screens ----------
+  function hintBlock(p) {
+    if (S.solved[p.id]) return "";
+    if (S.shown[p.id]) return "<p class='hint'><strong>" + Li(UI.hint) + ":</strong> " + L(p.hint) + "</p>";
+    var left = MAX_HINTS - S.hints;
+    if (left <= 0) return "<p class='hint'>" + Li(UI.noHints) + "</p>";
+    return "<div class='row'><button class='btn secondary' type='button' data-act='hint'>" + Li(UI.useHint) + "</button><span class='hint'>" + left + " " + Li(UI.hintsLeft) + "</span></div>";
+  }
+  function solvedBlock(p, idx) {
+    if (!S.solved[p.id]) return "";
+    var last = idx === PUZZLES.length - 1;
+    return "<div class='solved' role='status'><div>" + L(p.done) + "</div><div><button class='btn' type='button' data-act='next'>" +
+      Li(last ? UI.finish : UI.next) + " →</button></div></div>";
+  }
+  function dawnBlock() {
+    if (!S.dawnSeen || S.finished) return "";
+    return "<div class='dawn' role='alert'><div>" + L(UI.dawn) + "</div><div class='row'><button class='btn' type='button' data-act='end'>" + Li(UI.finish) +
+      "</button><button class='btn secondary' type='button' data-act='dismissDawn'>" + Li(UI.keepGoing) + "</button></div></div>";
+  }
+  function head(p, idx) {
+    return "<p class='ref'>" + Li(UI.clue) + " " + (idx + 1) + " / " + PUZZLES.length + " · " + Li(p.ref) + "</p><h2>" + L(p.title) + "</h2><p class='story'>" + L(p.story) + "</p>";
+  }
+  function answerForm(p) {
+    if (S.solved[p.id]) return "";
+    return "<form class='answer' data-act='answer' autocomplete='off'><label for='ans-" + p.id + "'>" + L(p.label) + "</label>" +
+      "<input type='text' id='ans-" + p.id + "' autocapitalize='off' spellcheck='false'>" +
+      "<button class='btn' type='submit'>" + Li(UI.check) + "</button></form><p class='fb' id='fb' aria-live='polite'></p>";
+  }
+
+  function renderIntro() {
+    return "<section class='card hero'><p class='ref'>" + Li(INTRO.ref) + "</p><h1>" + L(UI.title) + "</h1><p class='story'>" + L(INTRO.story) + "</p>" +
+      "<div class='rules'>" +
+      "<div class='rule'><b>7</b>" + L(INTRO.r1) + "</div>" +
+      "<div class='rule'><b>50</b>" + L(INTRO.r2) + "</div>" +
+      "<div class='rule'><b>3</b>" + L(INTRO.r3) + "</div>" +
+      "<div class='rule'><b>EN·中·DE</b>" + L(INTRO.r4) + "</div>" +
+      "</div><div><button class='btn' type='button' data-act='start'>" + Li(UI.start) + " →</button></div></section>";
+  }
+
+  function renderText(p, idx) {
+    return "<section class='card'>" + head(p, idx) +
+      (p.task ? "<div class='task'>" + L(p.task) + "</div>" : "") +
+      "<blockquote class='verse'><div>" + L(p.verse) + "</div><div class='src'>" + Li(p.src) + "</div></blockquote>" +
+      answerForm(p) + hintBlock(p) + solvedBlock(p, idx) + "</section>";
+  }
+
+  function renderOrder(p, idx) {
+    var ord = S.orders[p.id];
+    var locked = !!S.solved[p.id];
+    var lis = ord.map(function (it, pos) {
+      return "<li><div class='txt'>" + L(p.items[it]) + "</div>" + (locked ? "<span></span>" :
+        "<div class='mv'><button type='button' data-act='up' data-pos='" + pos + "' aria-label='" + Lt(UI.up) + "'" + (pos === 0 ? " disabled" : "") + ">↑</button>" +
+        "<button type='button' data-act='down' data-pos='" + pos + "' aria-label='" + Lt(UI.down) + "'" + (pos === ord.length - 1 ? " disabled" : "") + ">↓</button></div>") + "</li>";
+    }).join("");
+    return "<section class='card'>" + head(p, idx) + "<ol class='order" + (locked ? " locked" : "") + "'>" + lis + "</ol>" +
+      (locked ? "" : "<div class='row'><button class='btn' type='button' data-act='checkOrder'>" + Li(UI.check) + "</button></div><p class='fb' id='fb' aria-live='polite'></p>") +
+      hintBlock(p) + solvedBlock(p, idx) + "</section>";
+  }
+
+  function isNear(r, c) {
+    var pr = S.maze.pos[0], pc = S.maze.pos[1];
+    return Math.abs(pr - r) + Math.abs(pc - c) === 1;
+  }
+  function renderMaze(p, idx) {
+    var locked = !!S.solved[p.id];
+    var cells = "";
+    for (var r = 0; r < 7; r++) for (var c = 0; c < 7; c++) {
+      var ch = MAZE[r][c], cls = [], label = "";
+      var k = r + "," + c;
+      if (ch === "#") cls.push("wall");
+      else {
+        if (S.maze.trail.indexOf(k) >= 0) cls.push("trail");
+        if (ch === "S") label = Lt(UI.gate);
+        if (ch === "G") { cls.push("goal"); label = Lt(UI.inner); }
+        if (!locked && isNear(r, c)) cls.push("near");
+      }
+      if (S.maze.pos[0] === r && S.maze.pos[1] === c) { cls.push("pos"); label = "●"; }
+      cells += "<button type='button' class='" + cls.join(" ") + "' data-act='step' data-r='" + r + "' data-c='" + c + "'" +
+        (ch === "#" || locked ? " tabindex='-1'" : "") + " aria-label='" + (ch === "#" ? "wall" : "row " + (r + 1) + " column " + (c + 1)) + "'>" + label + "</button>";
+    }
+    return "<section class='card'>" + head(p, idx) +
+      "<div class='maze-wrap'><div class='maze' role='grid'>" + cells + "</div></div>" +
+      "<div class='legend'><span>● " + Li(UI.you) + "</span><span>▢ " + Li(UI.inner) + "</span></div>" +
+      (locked ? "" : "<div class='row'><button class='btn secondary' type='button' data-act='mazeReset'>" + Li(UI.resetPath) + "</button></div>") +
+      hintBlock(p) + solvedBlock(p, idx) + "</section>";
+  }
+
+  function renderLogic(p, idx) {
+    var locked = !!S.solved[p.id];
+    var clues = "<ol class='clues'>" + p.clues.map(function (cl) { return "<li>" + L(cl) + "</li>"; }).join("") + "</ol>";
+    var cells = p.cellNames.map(function (nm, i) {
+      var opts = "<option value=''>" + Li(UI.choose) + "</option>" + p.people.map(function (pe) {
+        return "<option value='" + pe.id + "'" + (S.cells[i] === pe.id ? " selected" : "") + ">" + Li(pe) + "</option>";
+      }).join("");
+      return "<div class='cell" + (i >= 3 ? " inner" : "") + "'><label for='cell-" + i + "'>" + Li(nm) + "</label>" +
+        "<select id='cell-" + i + "' data-cell='" + i + "'" + (locked ? " disabled" : "") + ">" + opts + "</select></div>";
+    }).join("");
+    return "<section class='card'>" + head(p, idx) + clues + "<div class='cells'>" + cells + "</div>" +
+      (locked ? "" : "<div class='row'><button class='btn' type='button' data-act='checkCells'>" + Li(UI.check) + "</button></div><p class='fb' id='fb' aria-live='polite'></p>") +
+      hintBlock(p) + solvedBlock(p, idx) + "</section>";
+  }
+
+  function renderCipher(p, idx) {
+    var langs = S.lang === "all" ? LANGS : [S.lang];
+    var rows = langs.map(function (l) {
+      var c = p.cipher[l];
+      var key = c.key.map(function (k) { return "<span class='" + (k[1] === "?" ? "missing" : "") + "'>" + k[0] + " = " + k[1] + "</span>"; }).join("");
+      return "<div class='cipher-row' lang='" + (l === "zh" ? "zh-Hans" : l) + "'><div class='glyphs'>" + c.glyphs + "<small>" + c.tail + "</small></div>" +
+        "<div class='hint'>" + UI.key[l] + "</div><div class='key'>" + key + "</div></div>";
+    }).join("");
+    return "<section class='card'>" + head(p, idx) + "<div class='cipher'>" + rows + "</div>" + answerForm(p) + hintBlock(p) + solvedBlock(p, idx) + "</section>";
+  }
+
+  function renderEnd() {
+    return "<section class='card hero'><p class='ref'>" + Li(END.ref) + "</p><h1>" + L(END.title) + "</h1>" +
+      "<blockquote class='verse'><div>" + L(END.v31) + "</div><div class='src'>" + Li({ en: "v.31", zh: "第31节", de: "V. 31" }) + "</div></blockquote>" +
+      "<blockquote class='verse'><div>" + L(END.v34) + "</div><div class='src'>" + Li({ en: "v.34", zh: "第34节", de: "V. 34" }) + "</div></blockquote>" +
+      "<p class='story'>" + L(END.close) + "</p>" +
+      "<div class='stats'><div>" + Li(UI.time) + "<b>" + fmt(elapsed()) + "</b></div><div>" + Li(UI.hintsUsed) + "<b>" + S.hints + " / " + MAX_HINTS + "</b></div><div>" +
+      Li(UI.clue) + "<b>" + Object.keys(S.solved).length + " / " + PUZZLES.length + "</b></div></div></section>";
+  }
+
+  function renderLeader() {
+    if (!S.leader) return "";
+    var rows = PUZZLES.map(function (p, i) {
+      return "<tr><td>" + (i + 1) + "</td><td>" + p.title.en + "</td><td>" + p.answerShow + "</td><td>" + (S.solved[p.id] ? "✓" : "") + "</td></tr>";
+    }).join("");
+    var canSkip = S.step >= 1 && S.step <= PUZZLES.length && !S.solved[PUZZLES[S.step - 1].id];
+    return "<aside class='leader' aria-label='Leader panel'><strong>" + Li(UI.leader) + "</strong>" +
+      "<div class='shield-wrap'><div class='tbl" + (S.reveal ? "" : " hidden-answers") + "' aria-hidden='" + (!S.reveal) + "'><table><thead><tr><th>#</th><th>Clue</th><th>Answer</th><th></th></tr></thead><tbody>" + rows + "</tbody></table></div>" +
+      (S.reveal ? "" : "<button class='shield' type='button' data-act='reveal'><span>🔒 Answers hidden</span><small>Leader only · click to show</small></button>") + "</div>" +
+      (S.reveal ? "<div><button class='btn secondary' type='button' data-act='hide'>Hide answers</button></div>" : "") +
+      "<div class='row'>" +
+      (canSkip ? "<button class='btn secondary' type='button' data-act='skip'>Solve this clue for them</button>" : "") +
+      (S.confirmReset ? "<button class='btn' type='button' data-act='resetYes'>Yes, reset everything</button><button class='btn secondary' type='button' data-act='resetNo'>Cancel</button>"
+                      : "<button class='btn secondary' type='button' data-act='reset'>Reset game</button>") +
+      "</div></aside>";
+  }
+
+  function render() {
+    renderBar();
+    var html = renderLeader() + dawnBlock();
+    if (S.step === 0) html += renderIntro();
+    else if (S.step > PUZZLES.length) html += renderEnd();
+    else {
+      var p = PUZZLES[S.step - 1], i = S.step - 1;
+      html += ({ text: renderText, order: renderOrder, maze: renderMaze, logic: renderLogic, cipher: renderCipher })[p.type](p, i);
+    }
+    app.innerHTML = html;
+    save();
+  }
+
+  // ---------- actions ----------
+  function current() { return PUZZLES[S.step - 1]; }
+  function feedback(msg, ok) {
+    var fb = $("fb"); if (!fb) return;
+    fb.className = "fb " + (ok ? "ok" : "bad"); fb.innerHTML = msg;
+  }
+  function solve(p) {
+    S.solved[p.id] = true;
+    if (Object.keys(S.solved).length === PUZZLES.length && !S.finished) { /* finished on "open the doors" */ }
+    render();
+    var s = app.querySelector(".solved button"); if (s) s.focus();
+  }
+  function goNext() {
+    S.step += 1;
+    if (S.step > PUZZLES.length && !S.finished) S.finished = Date.now();
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    var f = app.querySelector("input[type=text], .card button, .card select"); if (f) f.focus({ preventScroll: true });
+  }
+  function moveMaze(r, c) {
+    var p = current(); if (!p || p.type !== "maze" || S.solved[p.id]) return;
+    if (r < 0 || c < 0 || r > 6 || c > 6 || MAZE[r][c] === "#" || !isNear(r, c)) return;
+    S.maze.pos = [r, c];
+    var k = r + "," + c;
+    var at = S.maze.trail.indexOf(k);
+    if (at >= 0) S.maze.trail = S.maze.trail.slice(0, at + 1); else S.maze.trail.push(k);
+    if (r === GOAL[0] && c === GOAL[1]) { solve(p); return; }
+    render();
+    var b = app.querySelector(".maze .pos"); if (b) b.focus({ preventScroll: true });
+  }
+
+  document.addEventListener("click", function (e) {
+    var lb = e.target.closest("[data-lang]");
+    if (lb) { S.lang = lb.getAttribute("data-lang"); render(); return; }
+    if (e.target.closest("#leaderBtn")) { S.leader = !S.leader; S.confirmReset = false; S.reveal = false; render(); return; }
+    var b = e.target.closest("[data-act]"); if (!b || b.tagName === "FORM") return;
+    var act = b.getAttribute("data-act"), p = current();
+    switch (act) {
+      case "start": if (!S.started) S.started = Date.now(); S.step = 1; render(); break;
+      case "next": goNext(); break;
+      case "end": S.dawnSeen = true; S.step = PUZZLES.length + 1; S.finished = S.finished || Date.now(); render(); break;
+      case "dismissDawn": S.dawnSeen = "dismissed"; render(); break;
+      case "hint":
+        if (p && !S.shown[p.id] && S.hints < MAX_HINTS) { S.shown[p.id] = true; S.hints++; render(); }
+        break;
+      case "up": case "down": {
+        var pos = +b.getAttribute("data-pos"), ord = S.orders[p.id], to = act === "up" ? pos - 1 : pos + 1;
+        if (to < 0 || to >= ord.length) break;
+        var t = ord[pos]; ord[pos] = ord[to]; ord[to] = t; render();
+        var again = app.querySelectorAll("[data-act='" + act + "']")[to]; if (again && !again.disabled) again.focus(); break;
+      }
+      case "checkOrder": {
+        var o = S.orders[p.id], right = o.filter(function (v, k) { return v === k; }).length;
+        if (right === o.length) solve(p);
+        else feedback(right + "/" + o.length + " " + Li(UI.inPlace) + ". " + Li(UI.wrong), false);
+        break;
+      }
+      case "step": moveMaze(+b.getAttribute("data-r"), +b.getAttribute("data-c")); break;
+      case "mazeReset": S.maze = { pos: [0, 0], trail: ["0,0"] }; render(); break;
+      case "checkCells": {
+        var ok = p.solution.every(function (v, k) { return S.cells[k] === v; });
+        if (ok) solve(p);
+        else {
+          var n = p.solution.filter(function (v, k) { return S.cells[k] === v; }).length;
+          feedback(n + "/5 " + Li(UI.inPlace) + ". " + Li(UI.wrong), false);
+        }
+        break;
+      }
+      case "skip": if (p) solve(p); break;
+      case "reveal": S.reveal = true; render(); break;
+      case "hide": S.reveal = false; render(); break;
+      case "reset": S.confirmReset = true; render(); break;
+      case "resetNo": S.confirmReset = false; render(); break;
+      case "resetYes": S = fresh(S.lang); render(); break;
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    var sel = e.target.closest("select[data-cell]");
+    if (sel) { S.cells[+sel.getAttribute("data-cell")] = sel.value; save(); }
+  });
+
+  document.addEventListener("submit", function (e) {
+    var f = e.target.closest("form[data-act='answer']"); if (!f) return;
+    e.preventDefault();
+    var p = current(); if (!p) return;
+    var v = norm(f.querySelector("input").value);
+    if (!v) return;
+    var ok = p.answers.some(function (a) { return norm(a) === v; });
+    if (ok) solve(p);
+    else { feedback(Li(UI.wrong), false); f.querySelector("input").select(); }
+  });
+
+  document.addEventListener("keydown", function (e) {
+    var p = current();
+    if (!p || p.type !== "maze" || S.solved[p.id]) return;
+    if (e.target.matches("input, select, textarea")) return;
+    var d = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+    if (!d) return;
+    e.preventDefault();
+    moveMaze(S.maze.pos[0] + d[0], S.maze.pos[1] + d[1]);
+  });
+
+  render();
+})();
+</script>
