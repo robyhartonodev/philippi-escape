@@ -154,7 +154,8 @@ h1 .ml > span + span, h2 .ml > span + span { font-size: .62em; }
 
 /* 6 prison cells */
 .people { display: flex; flex-wrap: wrap; gap: 8px; min-height: 48px; }
-.cells { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.cells { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 820px) { .cells { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .cell { background: var(--night); border: 1px solid var(--line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; min-height: 120px; align-content: start; cursor: pointer; text-align: left; min-width: 0;
   background-image: repeating-linear-gradient(90deg, transparent 0 18px, color-mix(in srgb, var(--line) 60%, transparent) 18px 20px); }
 .cell.inner { border-color: color-mix(in srgb, var(--lamp) 45%, var(--line)); }
@@ -253,7 +254,7 @@ a { color: var(--lamp); }
   var LANGS = ["en", "zh", "de"];
   var TOTAL_SEC = 60 * 60;
   var MAX_HINTS = 3;
-  var KEY = "philippi-escape-v5";
+  var KEY = "philippi-escape-v6";
   var LEADER_WORD = "lamp1626"; // secret word that unlocks the leader answers; change it here
 
   // ---------- shared text ----------
@@ -541,27 +542,35 @@ a { color: var(--lamp); }
         { id: "silas", en: "Silas", zh: "西拉", de: "Silas" },
         { id: "thief", en: "The thief", zh: "小偷", de: "Der Dieb" },
         { id: "soldier", en: "The soldier", zh: "士兵", de: "Der Soldat" },
-        { id: "old", en: "The old man", zh: "老人", de: "Der alte Mann" }
+        { id: "old", en: "The old man", zh: "老人", de: "Der alte Mann" },
+        { id: "debtor", en: "The debtor", zh: "欠债的人", de: "Der Schuldner" },
+        { id: "sailor", en: "The sailor", zh: "水手", de: "Der Seemann" }
       ],
-      solution: ["thief", "soldier", "old", "paul", "silas"],
+      solution: ["thief", "debtor", "old", "soldier", "sailor", "paul", "silas"],
       clues: [
-        { en: "Paul and Silas sit side by side in the inner prison, the two cells farthest from the door.", zh: "保罗和西拉在内监里挨着坐，也就是离门最远的两间。", de: "Paulus und Silas sitzen nebeneinander im innersten Gefängnis, in den zwei Zellen am weitesten von der Tür." },
+        { en: "Paul and Silas share the inner prison: the two cells farthest from the door.", zh: "保罗和西拉同在内监，就是离门最远的两间。", de: "Paulus und Silas teilen sich das innerste Gefängnis: die zwei Zellen am weitesten von der Tür." },
         { en: "Paul is closer to the door than Silas.", zh: "保罗比西拉离门更近。", de: "Paulus sitzt näher an der Tür als Silas." },
-        { en: "The thief sits as far from Paul and Silas as possible.", zh: "小偷坐得离保罗和西拉越远越好。", de: "Der Dieb sitzt so weit wie möglich von Paulus und Silas entfernt." },
-        { en: "The old man is not next to the thief.", zh: "老人不挨着小偷。", de: "Der alte Mann sitzt nicht neben dem Dieb." }
+        { en: "The soldier sits in the exact middle of the row.", zh: "士兵正好坐在这一排的正中间。", de: "Der Soldat sitzt genau in der Mitte der Reihe." },
+        { en: "The sailor sits right next to the inner prison. He heard every word of the songs.", zh: "水手紧挨着内监，歌声他一字不漏都听见了。", de: "Der Seemann sitzt direkt neben dem innersten Gefängnis. Er hat jedes Wort der Lieder gehört." },
+        { en: "The thief and the debtor sit side by side, somewhere between the door and the soldier.", zh: "小偷和欠债的人挨着坐，在门和士兵之间。", de: "Der Dieb und der Schuldner sitzen nebeneinander, irgendwo zwischen der Tür und dem Soldaten." },
+        { en: "The old man is not next to the thief.", zh: "老人不挨着小偷。", de: "Der alte Mann sitzt nicht neben dem Dieb." },
+        { en: "The old man sits closer to the singing than the debtor.", zh: "老人比欠债的人离歌声更近。", de: "Der alte Mann sitzt näher am Gesang als der Schuldner." }
       ],
       cellNames: [
         { en: "Cell 1 · door", zh: "第1间 · 门边", de: "Zelle 1 · Tür" },
         { en: "Cell 2", zh: "第2间", de: "Zelle 2" },
         { en: "Cell 3", zh: "第3间", de: "Zelle 3" },
-        { en: "Cell 4 · inner", zh: "第4间 · 内监", de: "Zelle 4 · innen" },
-        { en: "Cell 5 · inner", zh: "第5间 · 内监", de: "Zelle 5 · innen" }
+        { en: "Cell 4", zh: "第4间", de: "Zelle 4" },
+        { en: "Cell 5", zh: "第5间", de: "Zelle 5" },
+        { en: "Cell 6 · inner", zh: "第6间 · 内监", de: "Zelle 6 · innen" },
+        { en: "Cell 7 · inner", zh: "第7间 · 内监", de: "Zelle 7 · innen" }
       ],
-      answerShow: "1 thief · 2 soldier · 3 old man · 4 Paul · 5 Silas",
+      innerFrom: 5,
+      answerShow: "1 thief · 2 debtor · 3 old man · 4 soldier · 5 sailor · 6 Paul · 7 Silas",
       hint: {
-        en: "The inner prison is cells 4 and 5, so the thief must be in cell 1. The old man needs one cell of distance from him.",
-        zh: "内监是第4和第5间，所以小偷在第1间。老人和小偷之间要隔一间。",
-        de: "Das innerste Gefängnis sind die Zellen 4 und 5, also sitzt der Dieb in Zelle 1. Zwischen ihm und dem alten Mann muss eine Zelle frei sein."
+        en: "Place Paul, Silas, the soldier and the sailor first. That leaves cells 1–3 for the thief, the debtor and the old man.",
+        zh: "先放好保罗、西拉、士兵和水手。剩下第1–3间给小偷、欠债的人和老人。",
+        de: "Setzt zuerst Paulus, Silas, den Soldaten und den Seemann. Dann bleiben die Zellen 1–3 für den Dieb, den Schuldner und den alten Mann."
       },
       done: {
         en: "Nobody escaped. Paul shouts: “Do thyself no harm: for we are all here.”",
@@ -686,7 +695,7 @@ a { color: var(--lamp); }
       sang: false, c1: false, choiceWrong: null, choiceWrong2: null,
       quake: perm(6), quakeSel: null,
       dials: [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10), Math.floor(Math.random() * 10)],
-      cells: ["", "", "", "", ""], selPerson: null,
+      cells: ["", "", "", "", "", "", ""], selPerson: null,
       decode: {}, selGlyph: null
     };
   }
@@ -888,7 +897,7 @@ a { color: var(--lamp); }
     }).join("");
     var cells = p.cellNames.map(function (nm, k) {
       var who = S.cells[k];
-      return "<button type='button' class='cell" + (k >= 3 ? " inner" : "") + (S.selPerson && !done ? " target" : "") + "' data-act='cell' data-k='" + k + "'" + (done ? " disabled" : "") + ">" +
+      return "<button type='button' class='cell" + (k >= p.innerFrom ? " inner" : "") + (S.selPerson && !done ? " target" : "") + "' data-act='cell' data-k='" + k + "'" + (done ? " disabled" : "") + ">" +
         "<span class='lbl'>" + Li(nm) + "</span>" + (who ? "<span class='who'>" + nameOf(who) + "</span>" : "") + "</button>";
     }).join("");
     var body = "<ol class='clues'>" + p.clues.map(function (c) { return "<li>" + L(c) + "</li>"; }).join("") + "</ol>" +
@@ -1093,7 +1102,7 @@ a { color: var(--lamp); }
       }
       case "checkCells": {
         var n = p.solution.filter(function (v, k) { return S.cells[k] === v; }).length;
-        if (n === 5) solve(p); else { penalize(); render(); fb(n + "/5 " + Li(UI.inPlace) + ". " + Li(UI.wait), false); }
+        if (n === p.solution.length) solve(p); else { penalize(); render(); fb(Li(UI.notAll) + " " + Li(UI.wait), false); }
         break;
       }
 
