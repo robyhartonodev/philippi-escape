@@ -100,6 +100,8 @@ h1 .ml > span + span, h2 .ml > span + span { font-size: .62em; }
 .fb.ok { color: var(--ok); }
 .solved { border: 1px solid color-mix(in srgb, var(--ok) 50%, var(--line)); background: color-mix(in srgb, var(--ok) 8%, transparent); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; animation: glow 1.2s ease-out 1; }
 .hint { color: var(--muted); font-size: .95rem; }
+.countdown:empty { display: none; }
+.countdown { color: var(--lamp); font-weight: 600; font-variant-numeric: tabular-nums; border: 1px dashed var(--lamp-deep); border-radius: 8px; padding: 8px 12px; }
 .hint strong { color: var(--lamp); font-weight: 600; }
 .playlang { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; color: var(--muted); font-size: .9rem; }
 
@@ -291,6 +293,7 @@ a { color: var(--lamp); }
     restartQ: { en: "Restart the whole game?", zh: "确定要重新开始吗？", de: "Ganzes Spiel neu starten?" },
     yes: { en: "Yes", zh: "是", de: "Ja" },
     no: { en: "No", zh: "否", de: "Nein" },
+    guards: { en: "The guards are watching. You can try again in", zh: "看守正盯着你们。可以再试的倒计时：", de: "Die Wachen schauen her. Ihr könnt es wieder versuchen in" },
     wait: { en: "Wrong. The guards heard you: wait 15 seconds before trying again.", zh: "错了。看守听见了：请等15秒再试。", de: "Falsch. Die Wachen haben es gehört: Wartet 15 Sekunden." }
   };
   var COOL_MS = 15000;
@@ -739,6 +742,9 @@ a { color: var(--lamp); }
       var lab = el.getAttribute("data-label");
       if (lab) el.textContent = on ? "⏳ " + secs + "s" : lab;
     });
+    app.querySelectorAll("[data-countdown]").forEach(function (el) {
+      el.textContent = on ? "⏳ " + Li(UI.guards) + " " + secs + "s" : "";
+    });
   }
   function tick() {
     updateCool();
@@ -773,7 +779,10 @@ a { color: var(--lamp); }
       Li(i === PUZZLES.length - 1 ? UI.finish : UI.next) + " →</button></div></div>";
   }
   function fbLine(html, ok) { return "<p class='fb " + (ok ? "ok" : "bad") + "' id='fb' aria-live='polite'>" + (html || "") + "</p>"; }
-  function wrap(p, i, body, fb) { return "<section class='card'>" + head(p, i) + body + (fb === undefined ? "" : fb) + hintBlock(p) + solvedBlock(p, i) + "</section>"; }
+  function wrap(p, i, body, fb) {
+    return "<section class='card'>" + head(p, i) + body + (fb === undefined ? "" : fb) +
+      (S.solved[p.id] ? "" : "<p class='countdown' data-countdown aria-live='polite'></p>") + hintBlock(p) + solvedBlock(p, i) + "</section>";
+  }
 
   // ---------- puzzle renderers ----------
   var R = {};
