@@ -912,10 +912,14 @@ a { color: var(--lamp); }
       "<blockquote class='verse'><div>" + L(END.v34) + "</div><div class='src'>" + Li({ en: "v.34", zh: "第34节", de: "V. 34" }) + "</div></blockquote>" +
       "<p class='story'>" + L(END.close) + "</p>" +
       "<div class='stats'><div>" + Li(UI.time) + "<b>" + fmt(elapsed()) + "</b></div><div>" + Li(UI.hintsUsed) + "<b>" + S.hints + " / " + MAX_HINTS + "</b></div><div>" +
-      Li(UI.clue) + "<b>" + Object.keys(S.solved).length + " / " + PUZZLES.length + "</b></div></div></section>" +
-      "<section class='card'><h2>" + L(END.discussTitle) + "</h2><ol class='discuss'>" +
+      Li(UI.clue) + "<b>" + Object.keys(S.solved).length + " / " + PUZZLES.length + "</b></div></div>" +
+      "<div><button class='btn' type='button' data-act='discuss'>" + Li(END.discussTitle) + " →</button></div></section>";
+  }
+  function renderDiscuss() {
+    return "<section class='card'><p class='ref'>" + Li(END.ref) + "</p><h1>" + L(END.discussTitle) + "</h1><ol class='discuss'>" +
       END.questions.map(function (qq) { return "<li>" + L(qq) + "</li>"; }).join("") + "</ol>" +
-      "<p class='hint'>" + Li(END.credit) + " <a href='https://bsg.tjc.org/tjc_bsg_lesson/acts-25/?guide_id=310' target='_blank' rel='noopener'>True Jesus Church Bible Study Guide · Acts, Lesson 25</a></p></section>";
+      "<p class='hint'>" + Li(END.credit) + " <a href='https://bsg.tjc.org/tjc_bsg_lesson/acts-25/?guide_id=310' target='_blank' rel='noopener'>True Jesus Church Bible Study Guide · Acts, Lesson 25</a></p>" +
+      "<div><button class='btn secondary' type='button' data-act='backToEnd'>← " + Li(END.title) + "</button></div></section>";
   }
   function renderDawn() {
     if (S.dawnSeen !== true || S.finished) return "";
@@ -944,6 +948,7 @@ a { color: var(--lamp); }
     renderBar();
     var html = renderLeader() + renderDawn();
     if (S.step === 0) html += renderIntro();
+    else if (S.step > PUZZLES.length + 1) html += renderDiscuss();
     else if (S.step > PUZZLES.length) html += renderEnd();
     else { var p = PUZZLES[S.step - 1]; html += R[p.type](p, S.step - 1); }
     app.innerHTML = html;
@@ -981,6 +986,8 @@ a { color: var(--lamp); }
       case "topResetNo": S.confirmTop = false; render(); break;
       case "topResetYes": S = fresh(S.lang); render(); window.scrollTo({ top: 0 }); break;
       case "next": goNext(); break;
+      case "discuss": S.step = PUZZLES.length + 2; render(); window.scrollTo({ top: 0, behavior: "smooth" }); break;
+      case "backToEnd": S.step = PUZZLES.length + 1; render(); window.scrollTo({ top: 0, behavior: "smooth" }); break;
       case "end": S.step = PUZZLES.length + 1; S.finished = S.finished || Date.now(); render(); break;
       case "dismissDawn": S.dawnSeen = "dismissed"; render(); break;
       case "hint": if (p && !S.shown[p.id] && S.hints < MAX_HINTS) { S.shown[p.id] = true; S.hints++; render(); } break;
