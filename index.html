@@ -254,7 +254,7 @@ a { color: var(--lamp); }
   var LANGS = ["en", "zh", "de"];
   var TOTAL_SEC = 60 * 60;
   var MAX_HINTS = 3;
-  var KEY = "philippi-escape-v7";
+  var KEY = "philippi-escape-v8";
   var LEADER_WORD = "lamp1626"; // secret word that unlocks the leader answers; change it here
 
   // ---------- shared text ----------
@@ -588,13 +588,13 @@ a { color: var(--lamp); }
         de: "Der Kerkermeister ruft nach Licht und will Paulus und Silas herausführen. Aber ihre Füße sind noch im Block verschlossen."
       },
       task: {
-        en: "The code: take the verse number of the earthquake, multiply it by the number of men singing in the inner prison, subtract the hour when they sang, then add the chapter number of this story. Set the three dials.",
-        zh: "密码：取地震那一节的节数，乘以在内监里唱诗的人数，减去他们唱诗的钟点，再加上这个故事所在的章数。转动三个转盘。",
-        de: "Der Code: Nehmt die Versnummer des Erdbebens, multipliziert sie mit der Zahl der Männer, die im innersten Gefängnis sangen, zieht die Stunde ab, zu der sie sangen, und zählt die Kapitelnummer dieser Geschichte dazu. Stellt die drei Rädchen ein."
+        en: "The jailer scratched the code on the wall, step by step: start with the verse number of the earthquake. Multiply by the number of men singing in the inner prison. Subtract the hour when they sang. Add the chapter number of this story. Add the total you counted in “Forty minus one”. Finally, subtract the number of prisoners you counted in the cells. Set the three dials.",
+        zh: "禁卒把密码一步一步刻在墙上：从地震那一节的节数开始，乘以在内监里唱诗的人数，减去他们唱诗的钟点，加上这个故事所在的章数，再加上你们在“四十减去一”里算出的总数，最后减去你们在监房里点到的囚犯人数。转动三个转盘。",
+        de: "Der Kerkermeister hat den Code Schritt für Schritt an die Wand geritzt: Beginnt mit der Versnummer des Erdbebens. Multipliziert mit der Zahl der Männer, die im innersten Gefängnis sangen. Zieht die Stunde ab, zu der sie sangen. Zählt die Kapitelnummer dieser Geschichte dazu. Zählt die Summe aus „Vierzig weniger einen“ dazu. Zieht zum Schluss die Zahl der Gefangenen ab, die ihr in den Zellen gezählt habt. Stellt die drei Rädchen ein."
       },
-      code: [0, 5, 6],
-      answerShow: "26 × 2 − 12 + 16 = 56 → 0-5-6",
-      hint: { en: "Earthquake: verse 26. Midnight is the 12th hour. The chapter is in every clue's reference.", zh: "地震：第26节。半夜是十二点。章数写在每条线索的出处里。", de: "Erdbeben: Vers 26. Mitternacht ist die 12. Stunde. Das Kapitel steht bei jedem Hinweis oben." },
+      code: [2, 5, 1],
+      answerShow: "26 × 2 − 12 + 16 + 202 − 7 = 251 → 2-5-1",
+      hint: { en: "Earthquake: verse 26. Midnight is the 12th hour. “Forty minus one” was 202, and there were 7 prisoners in the cells.", zh: "地震：第26节。半夜是十二点。“四十减去一”的答案是202，监房里有7个囚犯。", de: "Erdbeben: Vers 26. Mitternacht ist die 12. Stunde. „Vierzig weniger einen“ ergab 202, und in den Zellen saßen 7 Gefangene." },
       done: {
         en: "Click. The stocks open, and the jailer brings them out.",
         zh: "咔嗒一声，木狗打开了，禁卒领他们出来。",
