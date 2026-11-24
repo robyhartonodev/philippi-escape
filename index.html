@@ -175,6 +175,27 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
 .palette { display: flex; flex-wrap: wrap; gap: 6px; }
 .palette .piece { min-width: 46px; text-align: center; font-size: 1.15rem; padding: 8px 10px; }
 
+/* keypad (maths 1) */
+.padwrap { display: grid; gap: 12px; justify-items: center; }
+.screen { width: min(280px, 100%); background: #0a0d14; border: 1px solid var(--line); border-radius: 10px; padding: 10px 16px; text-align: right;
+  font-size: 2.2rem; font-variant-numeric: tabular-nums; letter-spacing: .08em; color: var(--lamp); min-height: 64px; }
+.screen.ok { color: var(--ok); }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: min(280px, 100%); }
+.key-btn { text-align: center; font-size: 1.4rem; padding: 12px 0; }
+.key-btn.enter { font-size: 1rem; background: var(--lamp); color: #1a1206; border-color: var(--lamp); font-weight: 600; }
+
+/* dial lock (maths 2) */
+.lock { display: grid; justify-items: center; }
+.shackle { width: 150px; height: 70px; border: 14px solid #8a8f9c; border-bottom: 0; border-radius: 75px 75px 0 0; transition: transform .6s ease; }
+.lock.open .shackle { transform: translateY(-22px) rotate(-12deg); transform-origin: left bottom; }
+.lock-body { display: flex; gap: 12px; padding: 18px 22px; background: linear-gradient(180deg, #5a4a2e, #3e321f); border: 2px solid #7a6440; border-radius: 16px; }
+.dial { display: grid; gap: 6px; justify-items: center; }
+.dial-btn { width: 52px; height: 40px; border-radius: 8px; border: 1px solid #7a6440; background: #2b2316; color: var(--lamp); cursor: pointer; font-size: 1rem; }
+.dial-btn:disabled { opacity: .4; cursor: default; }
+.dial-num { width: 52px; height: 64px; display: grid; place-items: center; background: #0a0d14; border: 1px solid #7a6440; border-radius: 8px;
+  font-size: 2.2rem; font-variant-numeric: tabular-nums; color: var(--parch); }
+.dial-num.ok { color: var(--ok); }
+
 /* intro + end */
 .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 .rule { background: var(--night); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
@@ -223,9 +244,9 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
 (function () {
   "use strict";
   var LANGS = ["en", "zh", "de"];
-  var TOTAL_SEC = 50 * 60;
+  var TOTAL_SEC = 60 * 60;
   var MAX_HINTS = 3;
-  var KEY = "philippi-escape-v2";
+  var KEY = "philippi-escape-v3";
   var LEADER_WORD = "lamp1626"; // secret word that unlocks the leader answers; change it here
 
   // ---------- shared text ----------
@@ -256,15 +277,19 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
       zh: "天亮了。带领者：请朗读使徒行传16:26，然后打开监门。",
       de: "Der Morgen ist da. Leiter: Lest Apostelgeschichte 16,26 vor und öffnet dann die Türen."
     },
-    keepGoing: { en: "Keep solving", zh: "继续解谜", de: "Weiter rätseln" }
+    keepGoing: { en: "Keep solving", zh: "继续解谜", de: "Weiter rätseln" },
+    notAll: { en: "Not all correct yet. Look again.", zh: "还没有全对，再看看。", de: "Noch nicht alles richtig. Schaut nochmal." },
+    enter: { en: "Enter", zh: "确定", de: "Eingabe" },
+    tryLock: { en: "Try the lock", zh: "试开锁", de: "Schloss probieren" },
+    locked: { en: "The lock doesn't move.", zh: "锁没有打开。", de: "Das Schloss bewegt sich nicht." }
   };
 
   var INTRO = {
     ref: { en: "Acts 16:16–34", zh: "使徒行传 16:16–34", de: "Apostelgeschichte 16,16–34" },
     story: {
-      en: "Philippi, a Roman colony, around AD 50. Paul and Silas have been beaten and thrown into the inner prison, their feet locked in the stocks. You are locked in with them. It is almost midnight. Work through seven clues from Acts 16 before dawn.",
-      zh: "公元50年左右，罗马殖民城腓立比。保罗和西拉被棍打后下在内监，两脚上了木狗。你们和他们一同被关在这里。将近半夜了。在天亮之前，解开使徒行传16章的七条线索。",
-      de: "Philippi, eine römische Kolonie, um 50 n. Chr. Paulus und Silas wurden geschlagen und ins innerste Gefängnis geworfen, die Füße im Block. Ihr seid mit ihnen eingesperrt. Es ist fast Mitternacht. Löst sieben Hinweise aus Apostelgeschichte 16, bevor der Morgen kommt."
+      en: "Philippi, a Roman colony, around AD 50. Paul and Silas have been beaten and thrown into the inner prison, their feet locked in the stocks. You are locked in with them. It is almost midnight. Work through nine clues before dawn.",
+      zh: "公元50年左右，罗马殖民城腓立比。保罗和西拉被棍打后下在内监，两脚上了木狗。你们和他们一同被关在这里。将近半夜了。在天亮之前，解开九条线索。",
+      de: "Philippi, eine römische Kolonie, um 50 n. Chr. Paulus und Silas wurden geschlagen und ins innerste Gefängnis geworfen, die Füße im Block. Ihr seid mit ihnen eingesperrt. Es ist fast Mitternacht. Löst neun Hinweise, bevor der Morgen kommt."
     },
     r1: { en: "clues, one after another", zh: "条线索，逐一解开", de: "Hinweise, einer nach dem anderen" },
     r2: { en: "minutes until dawn", zh: "分钟后天亮", de: "Minuten bis zum Morgen" },
@@ -284,14 +309,14 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         de: "Eine Magd mit einem Wahrsagegeist läuft Paulus viele Tage nach und schreit. Schließlich dreht er sich um und spricht zu dem Geist."
       },
       task: {
-        en: "Tap the word tiles to build Paul's command. Two tiles don't belong.",
-        zh: "点击词块，拼出保罗的命令。有两个词块是多余的。",
-        de: "Tippt die Wortkarten an und baut den Befehl des Paulus. Zwei Karten gehören nicht dazu."
+        en: "Tap the word tiles to build Paul's command. Four tiles don't belong.",
+        zh: "点击词块，拼出保罗的命令。有四个词块是多余的。",
+        de: "Tippt die Wortkarten an und baut den Befehl des Paulus. Vier Karten gehören nicht dazu."
       },
       tiles: {
-        en: { good: ["In", "the", "name", "of", "Jesus", "Christ,", "come", "out!"], bad: ["Caesar,", "money,"] },
-        zh: { good: ["我", "奉", "耶稣基督", "的名", "吩咐你", "出来！"], bad: ["凯撒", "银子"] },
-        de: { good: ["Im", "Namen", "Jesu", "Christi:", "fahre", "aus!"], bad: ["des Kaisers", "des Geldes"] }
+        en: { good: ["In", "the", "name", "of", "Jesus", "Christ,", "come", "out!"], bad: ["Caesar,", "money,", "Paul,", "my"] },
+        zh: { good: ["我", "奉", "耶稣基督", "的名", "吩咐你", "出来！"], bad: ["凯撒", "银子", "保罗", "我的"] },
+        de: { good: ["Im", "Namen", "Jesu", "Christi:", "fahre", "aus!"], bad: ["des Kaisers", "des Geldes", "Paulus", "meinem"] }
       },
       answerShow: "In the name of Jesus Christ, come out! / 我奉耶稣基督的名吩咐你出来！ / Im Namen Jesu Christi: fahre aus!",
       hint: { en: "Paul doesn't use his own authority, or Rome's, or money's.", zh: "保罗不是凭自己、凯撒或钱财的权柄。", de: "Paulus beruft sich nicht auf sich selbst, nicht auf Rom und nicht auf Geld." },
@@ -311,23 +336,53 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         de: "Die Herren sind wütend, und alles geht sehr schnell."
       },
       task: {
-        en: "Tap the events in the order they happened. A wrong tap shakes.",
-        zh: "按事情发生的顺序点击。点错会摇晃。",
-        de: "Tippt die Ereignisse in der richtigen Reihenfolge an. Ein falscher Tipp wackelt."
+        en: "Tap the events in the order they happened. One wrong tap and you start again.",
+        zh: "按事情发生的顺序点击。点错一次就要从头开始。",
+        de: "Tippt die Ereignisse in der richtigen Reihenfolge an. Ein falscher Tipp, und ihr beginnt von vorn."
       },
       items: [
+        { en: "Paul commands the spirit to leave the girl.", zh: "保罗吩咐那鬼从使女身上出来。", de: "Paulus gebietet dem Geist, aus der Magd auszufahren." },
         { en: "The owners see that their hope of profit is gone.", zh: "使女的主人们见得利的指望没有了。", de: "Die Herren sehen, dass ihre Hoffnung auf Gewinn dahin ist." },
         { en: "They seize Paul and Silas and drag them to the marketplace.", zh: "他们揪住保罗和西拉，拉到市上去见首领。", de: "Sie packen Paulus und Silas und schleppen sie auf den Markt." },
         { en: "They accuse them: “These Jews are throwing our city into an uproar.”", zh: "他们控告说：“这些人是犹太人，竟骚扰我们的城。”", de: "Sie klagen an: „Diese Juden bringen unsere Stadt in Aufruhr.“" },
         { en: "The crowd joins in the attack.", zh: "众人就一同起来攻击他们。", de: "Das Volk stellt sich gegen sie." },
         { en: "The magistrates have them stripped and beaten with rods.", zh: "官长吩咐剥了他们的衣裳，用棍打。", de: "Die Stadtrichter lassen ihnen die Kleider herunterreißen und sie mit Ruten schlagen." }
       ],
-      answerShow: "Profit gone → dragged to market → accused → crowd → beaten",
-      hint: { en: "Money comes first, the beating comes last.", zh: "先是钱的事，最后才是棍打。", de: "Zuerst geht es ums Geld, zuletzt kommen die Schläge." },
+      answerShow: "Spirit cast out → profit gone → dragged to market → accused → crowd → beaten",
+      hint: { en: "Money comes right after the miracle. The beating comes last.", zh: "神迹之后马上是钱的事，最后才是棍打。", de: "Gleich nach dem Wunder geht es ums Geld, zuletzt kommen die Schläge." },
       done: {
         en: "Accused as foreigners who disturb the city, and beaten without a trial.",
         zh: "他们被控是扰乱城市的外族人，没有定罪就被棍打。",
         de: "Als Fremde angeklagt, die die Stadt aufwiegeln, und ohne Urteil geschlagen."
+      }
+    },
+    {
+      id: "stripes", type: "keypad",
+      ref: { en: "2 Corinthians 11:24–25", zh: "哥林多后书 11:24–25", de: "2. Korinther 11,24–25" },
+      title: { en: "Forty minus one", zh: "四十减去一", de: "Vierzig weniger einen" },
+      story: {
+        en: "Philippi was not the first time Paul suffered for Jesus. Years later he wrote a list.",
+        zh: "腓立比并不是保罗第一次为耶稣受苦。后来他写下了一份清单。",
+        de: "Philippi war nicht das erste Mal, dass Paulus für Jesus litt. Jahre später schrieb er eine Liste."
+      },
+      verse: {
+        en: "“Of the Jews five times received I forty stripes save one. Thrice was I beaten with rods, once was I stoned, thrice I suffered shipwreck…”",
+        zh: "“被犹太人鞭打五次，每次四十减去一下；被棍打了三次；被石头打了一次；遇着船坏三次……”",
+        de: "„Von den Juden habe ich fünfmal empfangen vierzig Streiche weniger einen. Ich bin dreimal gestäupt, einmal gesteinigt, dreimal habe ich Schiffbruch erlitten…“"
+      },
+      src: { en: "KJV", zh: "和合本", de: "Luther 1912" },
+      task: {
+        en: "Add up everything Paul suffered: every lash, every beating with rods, every stoning, every shipwreck. Type the total.",
+        zh: "把保罗所受的苦全部加起来：每一下鞭打、每一次棍打、每一次被石头打、每一次船坏。输入总数。",
+        de: "Zählt alles zusammen, was Paulus erlitt: jeden Streich, jedes Stäupen, jede Steinigung, jeden Schiffbruch. Gebt die Summe ein."
+      },
+      answer: "202",
+      answerShow: "5 × 39 + 3 + 1 + 3 = 202",
+      hint: { en: "Forty minus one is 39, and it happened five times.", zh: "四十减去一是39，一共五次。", de: "Vierzig weniger einen sind 39, und das fünfmal." },
+      done: {
+        en: "202. And still he kept going, and still he sang.",
+        zh: "202。即便如此，他仍然向前，仍然歌唱。",
+        de: "202. Und trotzdem ging er weiter, und trotzdem sang er."
       }
     },
     {
@@ -352,9 +407,11 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         { ico: "🙏", ans: "kept", en: "Prayer", zh: "祷告", de: "Das Gebet" },
         { ico: "🎶", ans: "kept", en: "Their song", zh: "他们的歌声", de: "Ihr Lied" },
         { ico: "🤝", ans: "kept", en: "Each other", zh: "彼此的陪伴", de: "Einander" },
-        { ico: "✝️", ans: "kept", en: "Their faith in God", zh: "对神的信心", de: "Ihren Glauben an Gott" }
+        { ico: "✝️", ans: "kept", en: "Their faith in God", zh: "对神的信心", de: "Ihren Glauben an Gott" },
+        { ico: "🏛️", ans: "lost", en: "Their reputation in the city", zh: "他们在城里的名声", de: "Ihren Ruf in der Stadt" },
+        { ico: "😊", ans: "kept", en: "Their joy", zh: "他们的喜乐", de: "Ihre Freude" }
       ],
-      answerShow: "Lost: clothes, unhurt backs, freedom, moving feet · Kept: prayer, song, each other, faith",
+      answerShow: "Lost: clothes, unhurt backs, freedom, moving feet, reputation · Kept: prayer, song, each other, faith, joy",
       hint: { en: "Read ahead to verse 25: what were they still doing at midnight?", zh: "看第25节：半夜时他们还在做什么？", de: "Lest Vers 25: Was taten sie um Mitternacht immer noch?" },
       done: {
         en: "Everything the guards could take, they took. What mattered most, nobody could take.",
@@ -372,17 +429,29 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         de: "Verletzt und gefesselt im Dunkeln tun Paulus und Silas etwas, das niemand erwartet."
       },
       task: {
-        en: "First, sing the chorus of “It Is Well with My Soul” together, each in your own language. Then tick the box and choose what Paul and Silas did.",
-        zh: "先一起唱《我心灵得安宁》的副歌，各人用自己的语言。然后勾选方框，选出保罗和西拉做了什么。",
-        de: "Singt zuerst gemeinsam den Refrain von „Mir ist wohl in dem Herrn“, jeder in seiner Sprache. Dann setzt das Häkchen und wählt, was Paulus und Silas taten."
+        en: "First, sing the chorus of “It Is Well with My Soul” together, each in your own language. Then tick the box and answer both questions.",
+        zh: "先一起唱《我心灵得安宁》的副歌，各人用自己的语言。然后勾选方框，回答两个问题。",
+        de: "Singt zuerst gemeinsam den Refrain von „Mir ist wohl in dem Herrn“, jeder in seiner Sprache. Dann setzt das Häkchen und beantwortet beide Fragen."
       },
       sangLabel: { en: "We sang the chorus together", zh: "我们一起唱了副歌", de: "Wir haben den Refrain zusammen gesungen" },
       verse: {
-        en: "“And at midnight Paul and Silas prayed, and <span class='blank'>{x}</span> unto God: and the prisoners heard them.”",
-        zh: "“约在半夜，保罗和西拉祷告，<span class='blank'>{x}</span>神，众囚犯也侧耳而听。”",
-        de: "„Um die Mitternacht aber beteten Paulus und Silas und <span class='blank'>{x}</span> Gott. Und es hörten sie die Gefangenen.“"
+        en: "“And at midnight Paul and Silas prayed, and <span class='blank'>{x}</span> unto God: and <span class='blank'>{y}</span> heard them.”",
+        zh: "“约在半夜，保罗和西拉祷告，<span class='blank'>{x}</span>神，<span class='blank'>{y}</span>也侧耳而听。”",
+        de: "„Um die Mitternacht aber beteten Paulus und Silas und <span class='blank'>{x}</span> Gott. Und es hörten sie <span class='blank'>{y}</span>.“"
       },
       fill: { en: "sang praises", zh: "唱诗赞美", de: "lobten" },
+      fill2: { en: "the prisoners", zh: "众囚犯", de: "die Gefangenen" },
+      q1: { en: "What did Paul and Silas do?", zh: "保罗和西拉做了什么？", de: "Was taten Paulus und Silas?" },
+      q2: { en: "And who was listening?", zh: "谁在侧耳而听？", de: "Und wer hörte zu?" },
+      options2: [
+        { en: "the jailer", zh: "禁卒", de: "der Kerkermeister",
+          why: { en: "He was asleep (v.27).", zh: "他在睡觉（第27节）。", de: "Er schlief (V. 27)." } },
+        { ok: true, en: "the other prisoners", zh: "众囚犯", de: "die anderen Gefangenen" },
+        { en: "the magistrates", zh: "官长", de: "die Stadtrichter",
+          why: { en: "They weren't in the prison.", zh: "他们不在监里。", de: "Sie waren nicht im Gefängnis." } },
+        { en: "nobody", zh: "没有人", de: "niemand",
+          why: { en: "Someone was listening. Who else was in the prison?", zh: "有人在听。监里还有谁？", de: "Jemand hörte zu. Wer war noch im Gefängnis?" } }
+      ],
       src: { en: "v.25 · KJV", zh: "第25节 · 和合本", de: "V. 25 · Luther 1912" },
       options: [
         { ok: true, en: "sang praises", zh: "唱诗赞美", de: "lobten (sangen)" },
@@ -393,7 +462,7 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         { en: "planned an escape", zh: "计划逃跑", de: "planten die Flucht",
           why: { en: "They didn't run, not even when the doors opened (v.28).", zh: "就算监门开了，他们也没有逃（第28节）。", de: "Sie flohen nicht einmal, als die Türen offen waren (V. 28)." } }
       ],
-      answerShow: "sang praises / 唱诗赞美 / lobten",
+      answerShow: "1) sang praises / 唱诗赞美 / lobten · 2) the other prisoners",
       hint: { en: "What did you just do together?", zh: "你们刚才一起做了什么？", de: "Was habt ihr gerade zusammen gemacht?" },
       done: {
         en: "And the other prisoners were listening.",
@@ -411,18 +480,19 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         de: "Plötzlich bebt die Erde, und die Geschichte wird mit durcheinandergeschüttelt."
       },
       task: {
-        en: "Tap two pieces to swap them. Put the verse back in order.",
-        zh: "点两个片段来交换位置，把经文排回正确顺序。",
-        de: "Tippt zwei Teile an, um sie zu tauschen. Bringt den Vers wieder in Ordnung."
+        en: "Tap two pieces to swap them. Put the story back in order, then press Check.",
+        zh: "点两个片段来交换位置，把经文排回正确顺序，然后按“核对”。",
+        de: "Tippt zwei Teile an, um sie zu tauschen. Bringt die Geschichte in Ordnung und drückt dann „Prüfen“."
       },
       items: [
         { en: "Suddenly there was a great earthquake,", zh: "忽然，地大震动，", de: "Plötzlich kam ein großes Erdbeben," },
         { en: "so that the foundations of the prison were shaken.", zh: "甚至监牢的地基都摇动了。", de: "sodass die Grundmauern des Gefängnisses wankten." },
         { en: "Immediately all the doors were opened,", zh: "监门立刻全开，", de: "Sofort öffneten sich alle Türen," },
         { en: "and everyone's chains came loose.", zh: "众囚犯的锁链也都松开了。", de: "und allen fielen die Fesseln ab." },
-        { en: "The jailer woke up and saw the prison doors open.", zh: "禁卒一醒，看见监门全开。", de: "Der Kerkermeister erwachte und sah die Türen offen." }
+        { en: "The jailer woke up and saw the prison doors open.", zh: "禁卒一醒，看见监门全开。", de: "Der Kerkermeister erwachte und sah die Türen offen." },
+        { en: "He drew his sword, thinking the prisoners had escaped.", zh: "以为囚犯已经逃走，就拔刀要自杀。", de: "Er zog das Schwert, weil er meinte, die Gefangenen seien entflohen." }
       ],
-      answerShow: "Earthquake → foundations → doors → chains → jailer wakes",
+      answerShow: "Earthquake → foundations → doors → chains → jailer wakes → draws sword",
       hint: { en: "First the ground moves, then the doors, then the chains.", zh: "先是地动，然后是门，再是锁链。", de: "Erst bebt der Boden, dann die Türen, dann die Fesseln." },
       done: {
         en: "Every door open. Every chain loose. Free.",
@@ -453,9 +523,9 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
       ],
       solution: ["thief", "soldier", "old", "paul", "silas"],
       clues: [
-        { en: "Paul and Silas sit next to each other in the inner prison (cells 4 and 5).", zh: "保罗和西拉在内监里挨着坐（第4和第5间）。", de: "Paulus und Silas sitzen nebeneinander im innersten Gefängnis (Zellen 4 und 5)." },
-        { en: "Silas is in the last cell.", zh: "西拉在最后一间。", de: "Silas ist in der letzten Zelle." },
-        { en: "The thief sits by the door.", zh: "小偷坐在门边。", de: "Der Dieb sitzt an der Tür." },
+        { en: "Paul and Silas sit side by side in the inner prison, the two cells farthest from the door.", zh: "保罗和西拉在内监里挨着坐，也就是离门最远的两间。", de: "Paulus und Silas sitzen nebeneinander im innersten Gefängnis, in den zwei Zellen am weitesten von der Tür." },
+        { en: "Paul is closer to the door than Silas.", zh: "保罗比西拉离门更近。", de: "Paulus sitzt näher an der Tür als Silas." },
+        { en: "The thief sits as far from Paul and Silas as possible.", zh: "小偷坐得离保罗和西拉越远越好。", de: "Der Dieb sitzt so weit wie möglich von Paulus und Silas entfernt." },
         { en: "The old man is not next to the thief.", zh: "老人不挨着小偷。", de: "Der alte Mann sitzt nicht neben dem Dieb." }
       ],
       cellNames: [
@@ -467,14 +537,37 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
       ],
       answerShow: "1 thief · 2 soldier · 3 old man · 4 Paul · 5 Silas",
       hint: {
-        en: "Place Silas first, then Paul, then the thief. The old man needs one cell of distance from the thief.",
-        zh: "先放西拉，再放保罗，然后是小偷。老人和小偷之间要隔一间。",
-        de: "Setzt zuerst Silas, dann Paulus, dann den Dieb. Zwischen dem alten Mann und dem Dieb muss eine Zelle frei sein."
+        en: "The inner prison is cells 4 and 5, so the thief must be in cell 1. The old man needs one cell of distance from him.",
+        zh: "内监是第4和第5间，所以小偷在第1间。老人和小偷之间要隔一间。",
+        de: "Das innerste Gefängnis sind die Zellen 4 und 5, also sitzt der Dieb in Zelle 1. Zwischen ihm und dem alten Mann muss eine Zelle frei sein."
       },
       done: {
         en: "Nobody escaped. Paul shouts: “Do thyself no harm: for we are all here.”",
         zh: "没有一个人逃走。保罗大声呼叫：“不要伤害自己！我们都在这里。”",
         de: "Niemand ist geflohen. Paulus ruft laut: „Tu dir nichts Übles; denn wir sind alle hier!“"
+      }
+    },
+    {
+      id: "lock", type: "dials",
+      ref: { en: "Acts 16:29–30", zh: "使徒行传 16:29–30", de: "Apg 16,29–30" },
+      title: { en: "The jailer's lock", zh: "禁卒的锁", de: "Das Schloss des Kerkermeisters" },
+      story: {
+        en: "The jailer calls for a light and wants to bring Paul and Silas out. But their feet are still locked in the stocks.",
+        zh: "禁卒叫人拿灯来，要领保罗和西拉出来。可是他们的脚还锁在木狗里。",
+        de: "Der Kerkermeister ruft nach Licht und will Paulus und Silas herausführen. Aber ihre Füße sind noch im Block verschlossen."
+      },
+      task: {
+        en: "The code: take the verse number of the earthquake, multiply it by the number of men singing in the inner prison, then subtract the hour when they sang. Set the three dials.",
+        zh: "密码：取地震那一节的节数，乘以在内监里唱诗的人数，再减去他们唱诗的钟点。转动三个转盘。",
+        de: "Der Code: Nehmt die Versnummer des Erdbebens, multipliziert sie mit der Zahl der Männer, die im innersten Gefängnis sangen, und zieht die Stunde ab, zu der sie sangen. Stellt die drei Rädchen ein."
+      },
+      code: [0, 4, 0],
+      answerShow: "26 × 2 − 12 = 40 → 0-4-0",
+      hint: { en: "Earthquake: verse 26. Midnight is the 12th hour.", zh: "地震：第26节。半夜是十二点。", de: "Erdbeben: Vers 26. Mitternacht ist die 12. Stunde." },
+      done: {
+        en: "Forty, a number of testing in Scripture. Their test is over. The jailer brings them out.",
+        zh: "四十，是圣经中试炼的数字。他们的试炼结束了，禁卒领他们出来。",
+        de: "Vierzig, in der Bibel eine Zahl der Prüfung. Ihre Prüfung ist vorbei. Der Kerkermeister führt sie heraus."
       }
     },
     {
@@ -487,23 +580,23 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         de: "Zitternd fällt der Kerkermeister vor Paulus und Silas nieder: „Liebe Herren, was soll ich tun, daß ich selig werde?“"
       },
       task: {
-        en: "Decode Paul's answer. Tap a symbol, then tap the letter it stands for. One symbol is missing from the key.",
-        zh: "解开保罗的回答。先点一个符号，再点它代表的字。密码表里少了一个符号。",
-        de: "Entschlüsselt die Antwort des Paulus. Tippt ein Zeichen an, dann den passenden Buchstaben. Ein Zeichen fehlt im Schlüssel."
+        en: "Decode Paul's answer. Tap a symbol, then tap the letter it stands for. Two symbols are missing from the key.",
+        zh: "解开保罗的回答。先点一个符号，再点它代表的字。密码表里少了两个符号。",
+        de: "Entschlüsselt die Antwort des Paulus. Tippt ein Zeichen an, dann den passenden Buchstaben. Zwei Zeichen fehlen im Schlüssel."
       },
       cipher: {
         en: { glyphs: ["▲", "●", "☽", "✦", "●", "◆", "●"], word: "BELIEVE", tail: "on the Lord Jesus Christ",
-              key: [["■", "A"], ["▲", "B"], ["✚", "C"], ["●", "E"], ["⌘", "G"], ["☽", "L"], ["◆", "V"], ["✦", "?"]],
-              palette: ["A", "B", "C", "E", "G", "I", "L", "O", "U", "V"] },
+              key: [["■", "A"], ["▲", "B"], ["✚", "C"], ["●", "E"], ["⌘", "G"], ["☽", "L"], ["◆", "?"], ["✦", "?"]],
+              palette: ["A", "B", "C", "E", "F", "G", "I", "L", "O", "R", "S", "U", "V", "Y"] },
         zh: { glyphs: ["☉", "✦", "✚", "◇", "❖"], word: "当信主耶稣", tail: "，你和你一家都必得救",
-              key: [["▣", "爱"], ["☉", "当"], ["◎", "望"], ["✚", "主"], ["◇", "耶"], ["❖", "稣"], ["✦", "?"]],
-              palette: ["爱", "当", "望", "信", "主", "耶", "稣", "求", "跑"] },
+              key: [["▣", "爱"], ["☉", "当"], ["◎", "望"], ["✚", "?"], ["◇", "耶"], ["❖", "稣"], ["✦", "?"]],
+              palette: ["爱", "当", "望", "信", "主", "王", "神", "耶", "稣", "求", "跑"] },
         de: { glyphs: ["⌘", "☽", "■", "✿", "▲", "●"], word: "GLAUBE", tail: "an den HERRN Jesus Christus",
-              key: [["■", "A"], ["▲", "B"], ["●", "E"], ["⌘", "G"], ["✦", "I"], ["☽", "L"], ["◆", "V"], ["✿", "?"]],
-              palette: ["A", "B", "E", "G", "I", "L", "O", "U", "V"] }
+              key: [["■", "A"], ["▲", "?"], ["●", "E"], ["⌘", "G"], ["✦", "I"], ["☽", "L"], ["◆", "V"], ["✿", "?"]],
+              palette: ["A", "B", "D", "E", "G", "I", "L", "N", "O", "R", "S", "U", "V"] }
       },
-      answerShow: "BELIEVE / 当信主耶稣 / GLAUBE (missing: I / 信 / U)",
-      hint: { en: "The missing symbol is a vowel.", zh: "缺的那个字和“信心”有关。", de: "Das fehlende Zeichen ist ein Vokal." },
+      answerShow: "BELIEVE / 当信主耶稣 / GLAUBE (missing: I+V / 信+主 / U+B)",
+      hint: { en: "One missing symbol is a vowel. Read the word out loud with the gaps.", zh: "缺的两个字：一个关于“信心”，一个是称呼耶稣的。", de: "Ein fehlendes Zeichen ist ein Vokal. Lest das Wort mit den Lücken laut vor." },
       done: {
         en: "“Believe on the Lord Jesus Christ, and thou shalt be saved, and thy house.”",
         zh: "“当信主耶稣，你和你一家都必得救。”",
@@ -545,11 +638,13 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
     return {
       lang: lang || "all", playLang: "en", step: 0, started: null, finished: null, hints: 0,
       shown: {}, solved: {}, dawnSeen: false,
-      tilePerm: { en: perm(10), zh: perm(8), de: perm(8) }, picked: [],
-      tlOrder: perm(5), tlFound: 0,
-      sortOrder: perm(8), sort: {},
-      sang: false, choiceWrong: null,
-      quake: perm(5), quakeSel: null,
+      tilePerm: { en: perm(12), zh: perm(10), de: perm(10) }, picked: [],
+      tlOrder: perm(6), tlFound: 0,
+      pad: "",
+      sortOrder: perm(10), sort: {},
+      sang: false, c1: false, choiceWrong: null, choiceWrong2: null,
+      quake: perm(6), quakeSel: null,
+      dials: [0, 0, 0],
       cells: ["", "", "", "", ""], selPerson: null,
       decode: {}, selGlyph: null
     };
@@ -667,27 +762,56 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
 
   R.choice = function (p, i) {
     var done = !!S.solved[p.id];
-    var verse = {}; LANGS.forEach(function (l) { verse[l] = p.verse[l].replace("{x}", done ? p.fill[l] : "?"); });
-    var opts = p.options.map(function (o, k) {
-      var bad = S.choiceWrong === k;
-      return "<button type='button' class='piece" + (done && o.ok ? " good" : "") + (bad ? " shake" : "") + "' data-act='choose' data-k='" + k + "'" + (!S.sang || done ? " disabled" : "") + ">" + L(o) + "</button>";
-    }).join("");
-    var why = S.choiceWrong != null && !done ? L(p.options[S.choiceWrong].why) : "";
-    var body = "<label class='sang' for='sang'><input type='checkbox' id='sang' data-act='sang'" + (S.sang ? " checked" : "") + (done ? " disabled" : "") + "> <span>" + L(p.sangLabel) + " 🎵</span></label>" +
+    var verse = {}; LANGS.forEach(function (l) { verse[l] = p.verse[l].replace("{x}", S.c1 || done ? p.fill[l] : "?").replace("{y}", done ? p.fill2[l] : "?"); });
+    function opts(list, act, wrongK, locked, isDone) {
+      return list.map(function (o, k) {
+        return "<button type='button' class='piece" + (isDone && o.ok ? " good" : "") + (wrongK === k ? " shake" : "") + "' data-act='" + act + "' data-k='" + k + "'" + (locked || isDone ? " disabled" : "") + ">" + L(o) + "</button>";
+      }).join("");
+    }
+    var why = "";
+    if (!done && !S.c1 && S.choiceWrong != null) why = L(p.options[S.choiceWrong].why);
+    if (!done && S.c1 && S.choiceWrong2 != null) why = L(p.options2[S.choiceWrong2].why);
+    var body = "<label class='sang' for='sang'><input type='checkbox' id='sang' data-act='sang'" + (S.sang ? " checked" : "") + (done || S.c1 ? " disabled" : "") + "> <span>" + L(p.sangLabel) + " 🎵</span></label>" +
       "<blockquote class='verse'><div>" + L(verse) + "</div><div class='src'>" + Li(p.src) + "</div></blockquote>" +
-      "<div class='choices'>" + opts + "</div>";
+      "<p><strong>1.</strong> " + L(p.q1) + "</p><div class='choices'>" + opts(p.options, "choose", S.c1 ? null : S.choiceWrong, !S.sang, S.c1 || done) + "</div>" +
+      (S.c1 || done ? "<p><strong>2.</strong> " + L(p.q2) + "</p><div class='choices'>" + opts(p.options2, "choose2", S.choiceWrong2, false, done) + "</div>" : "");
     return wrap(p, i, body, done ? "" : fbLine(why, false));
   };
 
   R.swap = function (p, i) {
     var done = !!S.solved[p.id];
-    var right = S.quake.filter(function (v, k) { return v === k; }).length;
     var list = S.quake.map(function (k, pos) {
       return "<button type='button' class='piece" + (S.quakeSel === pos ? " sel" : "") + (done ? " good" : "") + "' data-act='qswap' data-pos='" + pos + "'" + (done ? " disabled" : "") + ">" + L(p.items[k]) + "</button>";
     }).join("");
     var cls = "quake" + (done ? " locked" : "") + (S.rumble ? " rumble" : "");
     S.rumble = false;
-    return wrap(p, i, "<div class='" + cls + "'>" + list + "</div>", done ? "" : fbLine(right + "/5 " + Li(UI.inPlace), right === 5));
+    return wrap(p, i, "<div class='" + cls + "'>" + list + "</div>" +
+      (done ? "" : "<div class='row'><button class='btn' type='button' data-act='checkQuake'>" + Li(UI.check) + "</button></div>"), done ? "" : fbLine());
+  };
+
+  R.keypad = function (p, i) {
+    var done = !!S.solved[p.id];
+    var keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "↵"].map(function (k) {
+      var act = k === "⌫" ? "padDel" : (k === "↵" ? "padEnter" : "pad");
+      var label = k === "↵" ? Li(UI.enter) : k;
+      return "<button type='button' class='piece key-btn" + (k === "↵" ? " enter" : "") + "' data-act='" + act + "' data-d='" + k + "'" + (done ? " disabled" : "") + " aria-label='" + (k === "⌫" ? "Delete" : (k === "↵" ? "Enter" : k)) + "'>" + label + "</button>";
+    }).join("");
+    var body = "<blockquote class='verse'><div>" + L(p.verse) + "</div><div class='src'>" + Li(p.src) + "</div></blockquote>" +
+      "<div class='padwrap'><div class='screen" + (done ? " ok" : "") + "' id='padscreen' aria-live='polite'>" + (done ? p.answer : (S.pad || "–")) + "</div>" +
+      (done ? "" : "<div class='keypad'>" + keys + "</div>") + "</div>";
+    return wrap(p, i, body, done ? "" : fbLine());
+  };
+
+  R.dials = function (p, i) {
+    var done = !!S.solved[p.id];
+    var dials = S.dials.map(function (v, k) {
+      return "<div class='dial'><button type='button' class='dial-btn' data-act='dialUp' data-k='" + k + "'" + (done ? " disabled" : "") + " aria-label='Dial " + (k + 1) + " up'>▲</button>" +
+        "<div class='dial-num" + (done ? " ok" : "") + "'>" + v + "</div>" +
+        "<button type='button' class='dial-btn' data-act='dialDown' data-k='" + k + "'" + (done ? " disabled" : "") + " aria-label='Dial " + (k + 1) + " down'>▼</button></div>";
+    }).join("");
+    var body = "<div class='lock" + (done ? " open" : "") + "' id='lock'><div class='shackle' aria-hidden='true'></div><div class='lock-body'>" + dials + "</div></div>" +
+      (done ? "" : "<div class='row' style='justify-content:center'><button class='btn' type='button' data-act='tryLock'>" + Li(UI.tryLock) + " 🔓</button></div>");
+    return wrap(p, i, body, done ? "" : fbLine());
   };
 
   R.place = function (p, i) {
@@ -727,7 +851,7 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
 
   function renderIntro() {
     return "<section class='card'><p class='ref'>" + Li(INTRO.ref) + "</p><h1>" + L(UI.title) + "</h1><p class='story'>" + L(INTRO.story) + "</p>" +
-      "<div class='rules'><div class='rule'><b>7</b>" + L(INTRO.r1) + "</div><div class='rule'><b>50</b>" + L(INTRO.r2) + "</div>" +
+      "<div class='rules'><div class='rule'><b>" + PUZZLES.length + "</b>" + L(INTRO.r1) + "</div><div class='rule'><b>" + (TOTAL_SEC / 60) + "</b>" + L(INTRO.r2) + "</div>" +
       "<div class='rule'><b>3</b>" + L(INTRO.r3) + "</div><div class='rule'><b>EN·中·DE</b>" + L(INTRO.r4) + "</div></div>" +
       "<div><button class='btn' type='button' data-act='start'>" + Li(UI.start) + " →</button></div></section>";
   }
@@ -819,23 +943,48 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
       case "tl": {
         var k = +b.getAttribute("data-k");
         if (k === S.tlFound) { S.tlFound++; if (S.tlFound === p.items.length) solve(p); else render(); }
-        else { flash = { sel: "[data-act='tl'][data-k='" + k + "']", cls: "shake" }; render(); fb(Li(UI.wrong), false); }
+        else { S.tlFound = 0; flash = { sel: ".timeline", cls: "shake" }; render(); fb(Li(UI.wrong), false); }
         break;
       }
+
+      // keypad
+      case "pad": if (S.pad.length < 4) { S.pad += b.getAttribute("data-d"); } render(); break;
+      case "padDel": S.pad = S.pad.slice(0, -1); render(); break;
+      case "padEnter":
+        if (S.pad === p.answer) solve(p);
+        else { S.pad = ""; flash = { sel: "#padscreen", cls: "shake" }; render(); fb(Li(UI.wrong), false); }
+        break;
+
+      // dials
+      case "dialUp": case "dialDown": {
+        var dk = +b.getAttribute("data-k");
+        S.dials[dk] = (S.dials[dk] + (act === "dialUp" ? 1 : 9)) % 10; render();
+        var again = app.querySelector("[data-act='" + act + "'][data-k='" + dk + "']"); if (again) again.focus();
+        break;
+      }
+      case "tryLock":
+        if (S.dials.every(function (v, k) { return v === p.code[k]; })) solve(p);
+        else { flash = { sel: "#lock", cls: "shake" }; render(); fb(Li(UI.locked), false); }
+        break;
 
       // 3 sort
       case "sortSet": S.sort[b.getAttribute("data-k")] = b.getAttribute("data-v"); render(); break;
       case "checkSort": {
         var right = p.cards.filter(function (c, k) { return S.sort[k] === c.ans; }).length;
         if (right === p.cards.length) solve(p);
-        else { render(); fb(right + "/" + p.cards.length + " " + Li(UI.sorted) + ". " + Li(UI.wrong), false); }
+        else { render(); fb(Li(UI.notAll), false); }
         break;
       }
 
       // 4 choice
       case "choose": {
         var k4 = +b.getAttribute("data-k");
-        if (p.options[k4].ok) solve(p); else { S.choiceWrong = k4; render(); }
+        if (p.options[k4].ok) { S.c1 = true; S.choiceWrong = null; } else S.choiceWrong = k4;
+        render(); break;
+      }
+      case "choose2": {
+        var k5 = +b.getAttribute("data-k");
+        if (p.options2[k5].ok) solve(p); else { S.choiceWrong2 = k5; render(); }
         break;
       }
 
@@ -845,7 +994,12 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
         if (S.quakeSel === null) S.quakeSel = pos;
         else if (S.quakeSel === pos) S.quakeSel = null;
         else { var t = S.quake[pos]; S.quake[pos] = S.quake[S.quakeSel]; S.quake[S.quakeSel] = t; S.quakeSel = null; }
-        if (S.quake.every(function (v, i) { return v === i; })) solve(p); else render();
+        render(); break;
+      }
+      case "checkQuake": {
+        var qr = S.quake.filter(function (v, i) { return v === i; }).length;
+        if (qr === S.quake.length) solve(p);
+        else { render(); fb(qr + "/" + S.quake.length + " " + Li(UI.inPlace) + ". " + Li(UI.wrong), false); }
         break;
       }
 
