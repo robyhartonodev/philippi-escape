@@ -167,7 +167,11 @@ ol.clues { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
 
 /* 7 decoder */
 .decode { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; }
-.slot { width: 58px; min-height: 84px; border: 1px solid var(--line); border-radius: 10px; background: var(--night); cursor: pointer; display: grid; grid-template-rows: 1fr 1fr; place-items: center; padding: 6px 0; }
+.decode { column-gap: 22px; row-gap: 10px; }
+.decode .word { display: inline-flex; gap: 6px; flex-wrap: nowrap; }
+.decode .word:lang(zh-Hans), .decode[lang^="zh"] .word { flex-wrap: wrap; }
+.decode .lit { font-size: 1.3rem; align-self: center; }
+.slot { width: 48px; min-height: 76px; border: 1px solid var(--line); border-radius: 10px; background: var(--night); cursor: pointer; display: grid; grid-template-rows: 1fr 1fr; place-items: center; padding: 6px 0; }
 .slot .g { font-size: 1.6rem; color: var(--lamp); }
 .slot .v { font-size: 1.3rem; font-weight: 600; min-height: 1.4em; border-bottom: 2px solid var(--line); min-width: 1.4em; text-align: center; }
 .slot.sel { border-color: var(--lamp); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lamp) 25%, transparent); }
@@ -254,7 +258,7 @@ a { color: var(--lamp); }
   var LANGS = ["en", "zh", "de"];
   var TOTAL_SEC = 60 * 60;
   var MAX_HINTS = 3;
-  var KEY = "philippi-escape-v8";
+  var KEY = "philippi-escape-v9";
   var LEADER_WORD = "lamp1626"; // secret word that unlocks the leader answers; change it here
 
   // ---------- shared text ----------
@@ -611,23 +615,26 @@ a { color: var(--lamp); }
         de: "Zitternd fällt der Kerkermeister vor Paulus und Silas nieder: „Liebe Herren, was soll ich tun, daß ich selig werde?“"
       },
       task: {
-        en: "Decode Paul's answer. Tap a symbol, then tap the letter it stands for. Two symbols are missing from the key.",
-        zh: "解开保罗的回答。先点一个符号，再点它代表的字。密码表里少了两个符号。",
-        de: "Entschlüsselt die Antwort des Paulus. Tippt ein Zeichen an, dann den passenden Buchstaben. Zwei Zeichen fehlen im Schlüssel."
+        en: "Decode Paul's whole answer. Tap a symbol, then tap the letter it stands for: every copy of that symbol fills in. Several symbols are missing from the key, and some key entries are decoys.",
+        zh: "解开保罗的整句回答。先点一个符号，再点它代表的字，相同的符号会一起填上。密码表里少了好几个符号，有些还是干扰项。",
+        de: "Entschlüsselt die ganze Antwort des Paulus. Tippt ein Zeichen an, dann den passenden Buchstaben: Alle gleichen Zeichen werden ausgefüllt. Mehrere Zeichen fehlen im Schlüssel, und manche Einträge sind Ablenkung."
       },
       cipher: {
-        en: { glyphs: ["▲", "●", "☽", "✦", "●", "◆", "●"], word: "BELIEVE", tail: "on the Lord Jesus Christ",
-              key: [["■", "A"], ["▲", "B"], ["✚", "C"], ["●", "E"], ["⌘", "G"], ["☽", "L"], ["◆", "?"], ["✦", "?"]],
-              palette: ["A", "B", "C", "E", "F", "G", "I", "L", "O", "R", "S", "U", "V", "Y"] },
-        zh: { glyphs: ["☉", "✦", "✚", "◇", "❖"], word: "当信主耶稣", tail: "，你和你一家都必得救",
-              key: [["▣", "爱"], ["☉", "当"], ["◎", "望"], ["✚", "?"], ["◇", "耶"], ["❖", "稣"], ["✦", "?"]],
-              palette: ["爱", "当", "望", "信", "主", "王", "神", "耶", "稣", "求", "跑"] },
-        de: { glyphs: ["⌘", "☽", "■", "✿", "▲", "●"], word: "GLAUBE", tail: "an den HERRN Jesus Christus",
-              key: [["■", "A"], ["▲", "?"], ["●", "E"], ["⌘", "G"], ["✦", "I"], ["☽", "L"], ["◆", "V"], ["✿", "?"]],
-              palette: ["A", "B", "D", "E", "G", "I", "L", "N", "O", "R", "S", "U", "V"] }
+        en: { tokens: Array.from("▲●☽✦●◆● ○◐ ✚⌘● ☽○■◇"), tail: "Jesus Christ",
+              answer: { "▲": "B", "●": "E", "☽": "L", "✦": "I", "◆": "V", "○": "O", "◐": "N", "✚": "T", "⌘": "H", "■": "R", "◇": "D" },
+              key: [["▣", "A"], ["▲", "?"], ["✿", "C"], ["◇", "?"], ["●", "E"], ["⌘", "H"], ["✦", "?"], ["☽", "L"], ["◐", "N"], ["○", "O"], ["■", "?"], ["◎", "S"], ["✚", "T"], ["◆", "?"]],
+              palette: ["A", "B", "C", "D", "E", "G", "H", "I", "L", "N", "O", "R", "S", "T", "U", "V", "Y"] },
+        zh: { tokens: ["☉", "✦", "✚", "◇", "❖", "，", "你", "和", "你", "一", "家", "都", "◎", "▣", "■"], tail: "",
+              answer: { "☉": "当", "✦": "信", "✚": "主", "◇": "耶", "❖": "稣", "◎": "必", "▣": "得", "■": "救" },
+              key: [["○", "爱"], ["☉", "当"], ["◐", "望"], ["✚", "?"], ["◇", "耶"], ["❖", "稣"], ["✿", "求"], ["◎", "必"], ["✦", "?"], ["▣", "?"], ["■", "?"]],
+              palette: ["爱", "当", "望", "信", "主", "王", "神", "耶", "稣", "求", "必", "得", "失", "救", "跑"] },
+        de: { tokens: Array.from("⌘☽■✿▲● ■◐ ◇●◐ ✚●◆◆◐"), tail: "Jesus Christus",
+              answer: { "⌘": "G", "☽": "L", "■": "A", "✿": "U", "▲": "B", "●": "E", "◐": "N", "◇": "D", "✚": "H", "◆": "R" },
+              key: [["■", "A"], ["▲", "?"], ["◇", "D"], ["●", "E"], ["⌘", "?"], ["✚", "H"], ["✦", "I"], ["☽", "L"], ["◐", "N"], ["○", "O"], ["◆", "?"], ["◎", "S"], ["✿", "?"]],
+              palette: ["A", "B", "D", "E", "G", "H", "I", "L", "N", "O", "R", "S", "T", "U", "V"] }
       },
-      answerShow: "BELIEVE / 当信主耶稣 / GLAUBE (missing: I+V / 信+主 / U+B)",
-      hint: { en: "One missing symbol is a vowel. Read the word out loud with the gaps.", zh: "缺的两个字：一个关于“信心”，一个是称呼耶稣的。", de: "Ein fehlendes Zeichen ist ein Vokal. Lest das Wort mit den Lücken laut vor." },
+      answerShow: "BELIEVE ON THE LORD (Jesus Christ) / 当信主耶稣，你和你一家都必得救 / GLAUBE AN DEN HERRN (Jesus Christus)",
+      hint: { en: "Read it like a sentence: ?EL?E?E ON THE LO?? … Paul's answer is verse 31.", zh: "第31节：当?主耶稣，你和你一家都必??。", de: "Lest es als Satz: ?LA??E AN DEN HE??N … Die Antwort steht in Vers 31." },
       done: {
         en: "“Believe on the Lord Jesus Christ, and thou shalt be saved, and thy house.”",
         zh: "“当信主耶稣，你和你一家都必得救。”",
@@ -909,16 +916,19 @@ a { color: var(--lamp); }
 
   R.decode = function (p, i) {
     var done = !!S.solved[p.id], c = p.cipher[PL()], map = S.decode[PL()] || {};
-    var slots = c.glyphs.map(function (g, k) {
+    // group tokens into words so a word never breaks across lines
+    var slots = "<span class='word'>" + c.tokens.map(function (g, k) {
+      if (g === " ") return "</span><span class='word'>";
+      if (!c.answer[g]) return "<span class='lit'>" + g + "</span>";
       return "<button type='button' class='slot" + (S.selGlyph === g && !done ? " sel" : "") + "' data-act='glyph' data-g='" + g + "'" + (done ? " disabled" : "") + " aria-label='symbol " + (k + 1) + "'>" +
-        "<span class='g'>" + g + "</span><span class='v' lang='" + lng(PL()) + "'>" + (map[g] || "") + "</span></button>";
-    }).join("");
+        "<span class='g'>" + g + "</span><span class='v' lang='" + lng(PL()) + "'>" + (done ? c.answer[g] : (map[g] || "")) + "</span></button>";
+    }).join("") + "</span>";
     var key = c.key.map(function (k) { return "<span class='" + (k[1] === "?" ? "missing" : "") + "'>" + k[0] + " = " + k[1] + "</span>"; }).join("");
     var pal = c.palette.map(function (ch) {
       return "<button type='button' class='piece' data-act='letter' data-ch='" + ch + "' lang='" + lng(PL()) + "'" + cool("", !S.selGlyph || done) + ">" + ch + "</button>";
     }).join("");
     var body = playLangPicker() +
-      "<div class='decode' lang='" + lng(PL()) + "'>" + slots + "<span class='tail'>" + c.tail + "</span></div>" +
+      "<div class='decode' lang='" + lng(PL()) + "'>" + slots + (c.tail ? "<span class='tail'>" + c.tail + "</span>" : "") + "</div>" +
       "<div class='hint'>" + Li(UI.key) + "</div><div class='key'>" + key + "</div>" +
       (done ? "" : "<div class='palette'>" + pal + "</div>");
     return wrap(p, i, body, done ? "" : fbLine());
@@ -1112,9 +1122,9 @@ a { color: var(--lamp); }
         if (!S.selGlyph) break;
         var m = S.decode[PL()] = S.decode[PL()] || {};
         m[S.selGlyph] = b.getAttribute("data-ch"); S.selGlyph = null;
-        var ci = p.cipher[PL()], word = Array.from(ci.word);
-        var filled = ci.glyphs.every(function (gl) { return m[gl]; });
-        var okw = ci.glyphs.every(function (gl, k) { return m[gl] === word[k]; });
+        var ci = p.cipher[PL()], gls = Object.keys(ci.answer);
+        var filled = gls.every(function (gl) { return m[gl]; });
+        var okw = gls.every(function (gl) { return m[gl] === ci.answer[gl]; });
         if (okw) solve(p);
         else { if (filled) penalize(); render(); if (filled) fb(Li(UI.wait), false); }
         break;
